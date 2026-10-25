@@ -82,7 +82,7 @@ Plan und Begründung: `docs/obdg/plan.md`. Entscheidung: `docs/adr/0001-region-o
 
 - Quellen im Register: 37, davon aktiv: 37
 - Sammler (Module in `app/collectors/`): 39
-- Tests: 527 Python, 147 JavaScript
+- Tests: 528 Python, 147 JavaScript
 
 ### Quellen und Lizenzen
 
