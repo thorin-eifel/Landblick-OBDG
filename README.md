@@ -69,8 +69,8 @@ Alles läuft auf dem eigenen Rechner: Die Sammler rufen die Quellen ab und schre
 |---|---|---|---|
 | O0 | Gerüst aus Landblick-RLP | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
 | O1 | Raumabstraktion | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
-| O2 | Kartenbasis | wartet auf Freigabe | [#2](https://github.com/thorin-eifel/Landblick-OBDG/pull/2) |
-| O3 | Datenpipeline | offen |  |
+| O2 | Kartenbasis | fertig | [#2](https://github.com/thorin-eifel/Landblick-OBDG/pull/2) |
+| O3 | Datenpipeline | wartet auf Freigabe |  |
 | O4 | Export und Auslieferung | offen |  |
 | O5 | Frontend | offen |  |
 | O6 | Betrieb und Härtung | offen |  |
@@ -81,8 +81,8 @@ Plan und Begründung: `docs/obdg/plan.md`. Entscheidung: `docs/adr/0001-region-o
 ### Zahlen
 
 - Quellen im Register: 37, davon aktiv: 37
-- Sammler (Module in `app/collectors/`): 38
-- Tests: 519 Python, 147 JavaScript
+- Sammler (Module in `app/collectors/`): 39
+- Tests: 527 Python, 147 JavaScript
 
 ### Quellen und Lizenzen
 
@@ -116,14 +116,14 @@ Plan und Begründung: `docs/obdg/plan.md`. Entscheidung: `docs/adr/0001-region-o
 | `dwd_waldbrand` | DWD Waldbrandindex | CC BY 4.0 | 3 h | ja |
 | `dwd_gesundheit` | DWD Pollen/UV | GeoNutzV (Namensnennung DWD), Bedingungen laut Open-Data-Hinweisen des DWD | 1 h | ja |
 | `tankerkoenig` | Tankerkönig | CC BY 4.0 | 2 min | ja |
-| `wallonie_pegel` | SPW Pegel | keine ausdrückliche Lizenzangabe am Dienst gefunden | 15 min | ja |
+| `nrw_pegel` | Pegel NRW | Datenlizenz Deutschland – Zero – Version 2.0 (dl-de/zero-2-0) | 3 h | ja |
 | `brf` | BRF | keine offene Lizenz; nur Überschrift, Zeit und Link, kein Text, kein Bild | 15 min | ja |
 | `meteoalarm` | MeteoAlarm | laut Anbieter gleichwertig CC BY 4.0 mit zusätzlichen Auflagen für die Weiterverbreitung | 10 min | ja |
 | `statec_sprit` | Höchstpreise Luxemburg | CC0 1.0 | 1 h | ja |
 | `osm_tankstellen_lu` | Tankstellen Luxemburg | ODbL 1.0 (© OpenStreetMap-Mitwirkende) | 168 h | ja |
 | `dwd_stationen` | DWD-Stationen | DWD GeoNutzV; Bright Sky Software MIT | 30 min | ja |
-| `irceline` | IRCEL-CELINE | CC BY 4.0 (nach Kenntnisstand) | 30 min | ja |
-| `kmi_stationen` | KMI-Stationen | CC BY 4.0 (nach Kenntnisstand) | 30 min | ja |
+| `irceline` | IRCEL-CELINE | CC BY 4.0 | 30 min | ja |
+| `kmi_stationen` | KMI-Stationen | CC BY 4.0 | 30 min | ja |
 | `lhp_hochwasser` | LHP Hochwasser | Creative Commons Namensnennung 4.0 (CC BY 4.0) | 10 min | ja |
 
 Vollständig mit Namensnennung: `sources.yaml` und die Seite „Quellen und Lizenzen“ der Anwendung.

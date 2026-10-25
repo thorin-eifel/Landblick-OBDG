@@ -305,15 +305,18 @@ Ortszuordnung ohne externen Geocoder: `app/geoparse.py` nutzt das Ortsverzeichni
 Bewusst nicht eingebunden: Wort.lu (behält sich Text- und Data-Mining ausdrücklich vor), Bluesky (öffentliche Suche verlangt Anmeldung), Telegram (Projektanweisung), Luxemburger Luftqualität und Spritpreise je Tankstelle (kein offener Datensatz gefunden), Copernicus EMS (nur bei konkretem Einsatz). Lizenz von Presseportal, Volksfreund, DWD Pollen/UV und Mastodon ist im Register mit `lizenz_geprueft: false` vermerkt und vor dem öffentlichen Start zu klären.
 Tests: `tests/test_quellen_batch2.py`.
 
-## Ostbelgien, Wallonie, Grand Est
+## Ostbelgien und Nachbarn: Quellen nach O3
 
 | Quelle | Collector | Inhalt | Takt |
 |---|---|---|---|
-| Hub'eau Hydrométrie | `hubeau_pegel` | Wasserstände Nordlothringen (Mosel, Nied, Orne, Seille), mm zu cm, im Gewässer-Reiter; keine Warnstufen der Quelle; Lizenz nicht gegengelesen | 15 min |
-| BRF Ostbelgien | `rss_brf` | Rubrik Regional, nur mit Ort im Radius (Schlagzeile oder Schlagwort); Titel und Link | 15 min |
-| MeteoAlarm | `meteoalarm` | Wetterwarnungen BE, FR, LU als Fläche je NUTS-Gebiet (`app/data/nuts_meteoalarm.json`, gebaut mit `tools/build_nuts.py`); nur Stufe, Art, Gebiet, Zeit, Link; Auflagen der Quelle nicht gelesen | 10 min |
+| SPW Hydrométrie | `wallonie_pegel` | Wasserstände Wallonien (Weser/Vesdre, Helle, Amel, Warche, Salm, Our), Stundenmittel, cm über Pegelnull. **Nur im Privatmodus** (`LANDBLICK_MODE=privat`): die Bedingungen des SPW verbieten die öffentliche Verbreitung ohne schriftliche Zustimmung; Entwurf der Anfrage in `docs/obdg/anfrage-spw.md` | 15 min |
+| LANUK OpenHygon | `nrw_pegel` | Wasserstände NRW (Rur, Inde, Vicht, Wurm, Urft, Olef), 15-Minuten-Werte aus der Tagesdatei des Landes, bis zu einem Tag alt, mit Informationsstufen 1 bis 3; dl-de/zero-2.0 | 3 h |
+| BRF | `rss_brf` | Regionalfeed (`brf.be/regional/feed/`), nur mit Ort in der Region (Schlagzeile oder Schlagwort, deutsche Ortsnamen wie Weismes und St. Vith); Titel und Link | 15 min |
+| MeteoAlarm | `meteoalarm` | Wetterwarnungen BE und LU als Fläche je NUTS-Gebiet (BE22, BE33, BE34, LU00); nur Stufe, Art, Gebiet, Zeit, Link | 10 min |
+| KMI | `kmi_stationen` | SYNOP-Stationen Mont Rigi und Spa (Elsenborn ohne Werte); CC BY | 30 min |
+| IRCEL-CELINE | `irceline` | Luftqualität, Stationen der Wallonie; CC BY 4.0 laut Dienst | 30 min |
 
-Der Radius von 120 km reicht nach Süden bis Metz und Thionville, nach Westen bis Bastogne, Namur bleibt draußen, nach Norden bis Eupen und Aachen, nach Osten bis Koblenz und Bad Kreuznach. Noch nicht eingebunden: SPW Wallonie Hydrometrie, IRCELINE, ATMO Grand Est, IRSN Téléray, Vigicrues (Endpunkte und Lizenzen nicht geprüft). Tests: `tests/test_quellen_batch3.py`.
+Betriebsart: Ohne `LANDBLICK_MODE` läuft alles öffentlich, Quellen mit `nutzung: privat` fehlen dann ganz (Sammler, Export, Quellenseite). Privatmodus nur, wenn Karte und Export auf dem eigenen Rechner bleiben. Live-Lauf aller Quellen gegen die Fläche: `docs/obdg/o3-datenpipeline.md`.
 
 ## Kultur und Geschichte
 

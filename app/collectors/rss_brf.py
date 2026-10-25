@@ -1,12 +1,13 @@
 """Schlagzeilen aus Ostbelgien (BRF, Belgischer Rundfunk der Deutschsprachigen Gemeinschaft, RSS-Feed).
 
-Quelle:     https://brf.be/feed/ (RSS 2.0, vom Sender öffentlich angeboten; robots.txt sperrt nur zwei Profilseiten)
+Quelle:     https://brf.be/regional/feed/ (RSS 2.0, Rubrik Regional, vom Sender öffentlich angeboten; robots.txt sperrt nur zwei Profilseiten)
 Betreiber:  BRF, Eupen
 Lizenz:     keine offene Lizenz; nur Überschrift, Zeit und Link, kein Text, kein Bild (lizenz_geprueft false)
 Intervall:  900 s
 Beispiel:   python -m app.collect --once --only brf
 
-Wir behalten nur die Rubrik "Regional" (Ostbelgien); National und International fallen weg. Der Ort kommt aus der Überschrift, ersatzweise
+Wir behalten nur die Rubrik "Regional" (Ostbelgien); der Regionalfeed liefert nur sie, der Filter bleibt als Sicherung, falls die URL
+auf den Hauptfeed zeigt (dort sind National, International und Sport in der Mehrheit). Der Ort kommt aus der Überschrift, ersatzweise
 aus den Schlagwörtern des Eintrags (BRF verschlagwortet Orte wie "Eupen" oder "Baelen"). Ohne Ort im Radius wird verworfen, nicht geraten.
 Personenbezogene Meldungen (Fahndung, Vermisste) fallen weg, wie bei den anderen Pressequellen.
 """

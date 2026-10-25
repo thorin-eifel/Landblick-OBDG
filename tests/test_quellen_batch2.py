@@ -187,7 +187,7 @@ async def test_gesundheit_collector_and_indizes_payload(registry, storage, setti
     ok, router, _ = await run("dwd_gesundheit", registry, storage, settings, handler)
     assert ok and len(router.calls) == 2
     idx = payloads.indizes_payload(storage, registry)
-    assert idx["pollen"]["regions"] and idx["uv"]["station"] == "Hahn" and idx["fire"]["stations"] == []
+    assert idx["pollen"]["regions"] and idx["uv"]["station"] == "Bonn" and idx["fire"]["stations"] == []
 
 
 # ---------------------------------------------------------------- Tankerkönig

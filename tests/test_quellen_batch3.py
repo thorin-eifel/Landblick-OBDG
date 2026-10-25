@@ -1,6 +1,6 @@
 """Ostbelgien: BRF und MeteoAlarm gegen aufgezeichnete Antworten (Stand 30.09.2026, aus Landblick-RLP).
 
-Echte Fixtures: brf_feed.xml, meteoalarm_france.json (Einträge zu FR411 bis
+Echte Fixtures: brf_feed.xml, brf_regional_real_2026-10-25.xml (beide auf Titel, Link, Datum, Schlagwörter gekürzt), meteoalarm_france.json (Einträge zu FR411 bis
 FR413 plus zwei fremde), meteoalarm_belgium.json (erste drei Warnungen). SYNTHETISCH sind die im Test markierten Abwandlungen,
 vor allem Warnungen für BE34 und Luxemburg (am Testtag lag dort nichts vor).
 """
@@ -39,6 +39,15 @@ def test_brf_keeps_only_regional_with_place_in_radius():
     assert st["total"] == 10 and st["other_topic"] >= 4
     assert all(e.type == "news" and e.region_tag == "BE" and e.raw_ref.startswith("https://brf.be/") for e in ev)
     assert all(e.confidence <= 0.7 and e.attrs["ort_genau"] is False for e in ev)
+
+
+def test_brf_regional_feed_real_places_in_ostbelgien():
+    """Regionalfeed vom 25.10.2026 (auf Titel, Link, Datum und Schlagwörter gekürzt): Orte aus Schlagzeile und Schlagwort."""
+    ev, st = rss_brf.parse_feed((FIX / "brf_regional_real_2026-10-25.xml").read_bytes(), NOW)
+    assert st["total"] == 10 and st["other_topic"] == 0
+    orte = {e.attrs["ort"] for e in ev}
+    assert {"St. Vith", "Walhorn", "Sourbrodt", "Hergenrath"} <= orte     # "St. Vith" ist die Schreibweise des BRF
+    assert "Lüttich" not in orte                                          # Lüttich liegt außerhalb der Region
 
 
 def test_brf_person_targeted_and_place_from_tag_SYNTHETISCH():

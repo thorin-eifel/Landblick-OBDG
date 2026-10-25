@@ -89,16 +89,17 @@ Kennung in der ersten Spalte, die Intervalle sind Soll-Abstände. „Risiko“ i
 | `dwd_waldbrand` | DWD Waldbrandindex | Deutscher Wetterdienst (DWD) | CC BY 4.0 | 3 h | niedrig | ja | ja |
 | `dwd_gesundheit` | DWD Pollen/UV | Deutscher Wetterdienst (DWD) | GeoNutzV (Namensnennung DWD), Bedingungen laut Open-Data-Hinweisen des DWD | 1 h | niedrig | nein | ja |
 | `tankerkoenig` | Tankerkönig | Tankerkönig; Daten der Markttransparenzstelle für Kraftstoffe (Bundeskartellamt) | CC BY 4.0 | 2 min | niedrig | nein | ja |
-| `wallonie_pegel` | SPW Pegel | Service public de Wallonie (SPW), Mobilité et Infrastructures, Direction des Voies hydrauliques, Hydrométrie | keine ausdrückliche Lizenzangabe am Dienst gefunden | 15 min | niedrig | nein | ja |
+| `wallonie_pegel` | SPW Pegel | Service public de Wallonie (SPW), Mobilité et Infrastructures, Direction des Voies hydrauliques, Hydrométrie | Nutzungsbedingungen SPW Hydrométrie: Wiedergabe mit Quellenangabe frei, Weitergabe an Dritte und öffentliche Verbreitung nur mit schriftlicher Zustimmung des SPW | 15 min | niedrig | ja | ja |
+| `nrw_pegel` | Pegel NRW | Landesamt für Natur, Umwelt und Klima Nordrhein-Westfalen (LANUK), Hochwasserportal NRW | Datenlizenz Deutschland – Zero – Version 2.0 (dl-de/zero-2-0) | 3 h | niedrig | ja | ja |
 | `brf` | BRF | BRF, Belgischer Rundfunk der Deutschsprachigen Gemeinschaft, Eupen | keine offene Lizenz; nur Überschrift, Zeit und Link, kein Text, kein Bild | 15 min | niedrig | nein | ja |
 | `meteoalarm` | MeteoAlarm | EUMETNET (MeteoAlarm); Herausgeber KMI/IRM Belgien, Météo-France, MeteoLux | laut Anbieter gleichwertig CC BY 4.0 mit zusätzlichen Auflagen für die Weiterverbreitung | 10 min | niedrig | nein | ja |
 | `statec_sprit` | Höchstpreise Luxemburg | STATEC Luxembourg (Preise setzt das Wirtschaftsministerium fest), Abruf über lustat.statec.lu (SDMX-REST) | CC0 1.0 | 1 h | niedrig | ja | ja |
 | `osm_tankstellen_lu` | Tankstellen Luxemburg | OpenStreetMap-Mitwirkende; Abfrage über die Overpass API (overpass-api.de) | ODbL 1.0 (© OpenStreetMap-Mitwirkende) | 168 h | niedrig | nein | ja |
 | `dwd_stationen` | DWD-Stationen | Deutscher Wetterdienst (Messdaten), Bright Sky (Jakob de Maeyer) als Aufbereitung | DWD GeoNutzV; Bright Sky Software MIT | 30 min | niedrig | nein | ja |
-| `irceline` | IRCEL-CELINE | IRCEL - CELINE (Belgian Interregional Environment Agency), Messnetze Flandern, Wallonien, Brüssel | CC BY 4.0 (nach Kenntnisstand) | 30 min | niedrig | nein | ja |
-| `kmi_stationen` | KMI-Stationen | Königliches Meteorologisches Institut von Belgien (KMI/IRM) | CC BY 4.0 (nach Kenntnisstand) | 30 min | niedrig | nein | ja |
+| `irceline` | IRCEL-CELINE | IRCEL - CELINE (Belgian Interregional Environment Agency), Messnetze Flandern, Wallonien, Brüssel | CC BY 4.0 | 30 min | niedrig | ja | ja |
+| `kmi_stationen` | KMI-Stationen | Königliches Meteorologisches Institut von Belgien (KMI/IRM) | CC BY 4.0 | 30 min | niedrig | ja | ja |
 | `lhp_hochwasser` | LHP Hochwasser | Länderübergreifendes Hochwasserportal der Hochwasserzentralen der Länder (Geschäftsstelle LfU Bayern, LUBW) | Creative Commons Namensnennung 4.0 (CC BY 4.0) | 10 min | niedrig | nein | ja |
 
-37 Quellen im Register, davon 37 aktiv (37 mit Sammler, 0 nur im Browser).
+38 Quellen im Register, davon 38 aktiv (38 mit Sammler, 0 nur im Browser).
 
 <!-- quellen:ende -->
