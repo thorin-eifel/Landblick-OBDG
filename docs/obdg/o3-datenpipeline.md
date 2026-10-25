@@ -35,13 +35,14 @@ Stand 25. Oktober 2026. Live-Lauf aller Quellen gegen die echte Fläche Ostbelgi
 | `lbm_baustellen` | 56 Meldungen | Eifelkreis, Vulkaneifel, Ösling |
 | `adsblol` | 4 Flugzeuge | |
 | `gtfs_static` | 242 Haltestellen LU, 65 DE | belgische Fahrpläne fehlen (TEC, SNCB: siehe Kandidaten) |
-| `gtfs_rt_de` | – | braucht den Index aus `gtfs_static`, im zweiten Lauf |
+| `gtfs_rt_de` | 43 Fahrten in der Region, 15 Meldungen | im zweiten Lauf, nach dem Index aus `gtfs_static`; keine Störungsmeldungen |
 | `brf` | 6 Meldungen | Walhorn, Sourbrodt, Hergenrath, St. Vith, Aachen, Verviers |
 | `statec_sprit` | Höchstpreise LU | |
 | `sgdnord_energie` | 367 Windräder, 62 Solarparks | im Zwischenspeicher, keine Ereignisse |
 | `osm_tankstellen_lu` | Tankstellen im Ösling | |
 | `osm_anbau`, `osm_routen` | teilweise | nach rund 12 Minuten Wiederholungen: ein Viertel der Anbauflächen und die Radrouten fehlen, letzter Stand bleibt; Overpass überlastet (429, 502, 504, Abbrüche) |
-| `osm_natur`, `osm_infra`, `osm_energie` | beim Schreiben noch offen | dieselbe Überlastung; Ergebnis im Pull Request nachgetragen |
+| `osm_energie` | 117 Objekte, teilweise | nach 25 Minuten Wiederholungen; Leitungen fehlen |
+| `osm_natur`, `osm_infra` | abgebrochen | nach 28 Minuten durch die Zeitgrenze des Laufs beendet, Overpass antwortete bis zuletzt nicht (ReadTimeout) |
 | `tankerkoenig`, `nasa_firms` | – | brauchen Zugangsschlüssel (`.env`) |
 
 Gebietszuordnung im Export: Städteregion Aachen 26, Eifelkreis Bitburg-Prüm 36, Landkreis Vulkaneifel 15, Ösling 13 Meldungen. Pegel im Export: 95 Stationen aus vier Quellen.
