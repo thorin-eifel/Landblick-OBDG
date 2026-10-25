@@ -1,0 +1,44 @@
+{
+ "radius_km": 25,
+ "spacing_km": 43.0,
+ "cover_km": 23.0,
+ "points": [
+  {
+   "lat": 49.9533,
+   "lon": 5.9748,
+   "rad": 25
+  },
+  {
+   "lat": 49.9533,
+   "lon": 6.5815,
+   "rad": 25
+  },
+  {
+   "lat": 50.2882,
+   "lon": 6.2781,
+   "rad": 25
+  },
+  {
+   "lat": 50.2882,
+   "lon": 6.8848,
+   "rad": 25
+  },
+  {
+   "lat": 50.6231,
+   "lon": 5.9748,
+   "rad": 25
+  },
+  {
+   "lat": 50.6231,
+   "lon": 6.5815,
+   "rad": 25
+  },
+  {
+   "lat": 50.958,
+   "lon": 6.2781,
+   "rad": 25
+  }
+ ],
+ "source": "Gitter über die deutsche Fläche der Region (Grenzen © OpenStreetMap-Mitwirkende, ODbL)",
+ "built_by": "tools/build_tank_grid.py"
+}

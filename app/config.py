@@ -1,0 +1,101 @@
+"""Zentrale Konfiguration.
+
+Zweck:      Räumlicher Zuschnitt, Pfade und Betriebsparameter an einer Stelle.
+Parameter:  Umgebungsvariablen (siehe .env.example), alle optional.
+Beispiel:   LANDBLICK_DB_PATH=./data/landblick.sqlite python -m app.collect --once
+"""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+def load_dotenv(path: Path | None = None) -> int:
+    """Liest KEY=VALUE-Zeilen aus .env in die Umgebung. Bereits gesetzte Variablen gewinnen (Shell schlägt Datei).
+
+    Kein Ersatz für einen Secret-Store, nur die Datei, die .env.example beschreibt. Werte werden nie geloggt.
+    Rückgabe: Anzahl neu gesetzter Variablen."""
+    path = path or BASE_DIR / ".env"
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return 0
+    n = 0
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip()
+        if value[:1] in ("'", '"') and value[0] in value[1:]:
+            value = value[1:value.index(value[0], 1)]   # Anführungszeichen: alles bis zum schließenden, auch "#"
+        else:
+            # Kommentar am Zeilenende (" # ...") gehört nicht zum Wert. Sonst landet er im User-Agent, und ein
+            # Umlaut darin lässt httpx jeden Abruf mit UnicodeEncodeError abbrechen.
+            for sep in (" #", "\t#"):
+                value = value.split(sep, 1)[0]
+            value = value.strip().strip("'\"")
+        if key and value and key not in os.environ:
+            os.environ[key] = value
+            n += 1
+    return n
+
+
+def load_zugang(path: Path | None = None) -> int:
+    """Zugangsdaten aus data/zugang.json (Eingabe in der Quellenübersicht) in die Umgebung; .env und Shell gewinnen. Werte werden nie geloggt."""
+    from .zugang import env_from_file
+    n = 0
+    for key, value in env_from_file(path or Path(os.environ.get("LANDBLICK_ZUGANG", BASE_DIR / "data" / "zugang.json"))).items():
+        if key not in os.environ:
+            os.environ[key] = value
+            n += 1
+    return n
+
+
+if not os.environ.get("LANDBLICK_NO_DOTENV"):
+    load_dotenv()
+    load_zugang()
+
+# Räumlicher Zuschnitt kommt aus region.yaml (app/region.py), nicht mehr aus Konstanten. Erst nach .env laden,
+# damit LANDBLICK_REGION und LANDBLICK_CENTER_* aus der Datei wirken.
+# CENTER_* ist der Bezugspunkt für Entfernungsangaben (Eupen), BBOX der Kasten der Region (grober Vorfilter,
+# Reihenfolge lat_min, lon_min, lat_max, lon_max). QUERY_* ist ein Kreis, der die Region umschließt, für Quellen,
+# die nur "Mittelpunkt plus Radius" können. Ob ein Punkt wirklich in der Region liegt, entscheidet geo.in_region().
+from .region import REGION  # noqa: E402
+
+CENTER_LAT = REGION.ref_lat
+CENTER_LON = REGION.ref_lon
+BBOX = REGION.bbox
+QUERY_LAT, QUERY_LON, QUERY_RADIUS_KM = REGION.query_lat, REGION.query_lon, REGION.query_radius_km
+
+CONTACT = os.environ.get("LANDBLICK_CONTACT", "kontakt@example.invalid")
+
+
+@dataclass(frozen=True)
+class Settings:
+    db_path: Path
+    sources_path: Path
+    web_dir: Path
+    user_agent: str
+    http_timeout_s: float
+    http_max_attempts: int
+    breaker_threshold: int
+    breaker_cooldown_s: int
+    retention_days: int
+
+    @classmethod
+    def from_env(cls) -> "Settings":
+        contact = os.environ.get("LANDBLICK_CONTACT", CONTACT)
+        return cls(
+            db_path=Path(os.environ.get("LANDBLICK_DB_PATH", BASE_DIR / "data" / "landblick.sqlite")),
+            sources_path=Path(os.environ.get("LANDBLICK_SOURCES", BASE_DIR / "sources.yaml")),
+            web_dir=Path(os.environ.get("LANDBLICK_WEB_DIR", BASE_DIR / "web")),
+            user_agent=f"Landblick/1.0 (+{contact})",
+            http_timeout_s=float(os.environ.get("LANDBLICK_HTTP_TIMEOUT", "20")),
+            http_max_attempts=int(os.environ.get("LANDBLICK_HTTP_ATTEMPTS", "3")),
+            breaker_threshold=int(os.environ.get("LANDBLICK_BREAKER_THRESHOLD", "5")),
+            breaker_cooldown_s=int(os.environ.get("LANDBLICK_BREAKER_COOLDOWN", "900")),
+            retention_days=int(os.environ.get("LANDBLICK_RETENTION_DAYS", "30")),
+        )

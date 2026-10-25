@@ -1,0 +1,8 @@
+# Orte mit Zoom 15 (Gebäude und Hausnummern). Alles andere der Region hat Gebäudeumrisse bis Zoom 14 (ring.pmtiles).
+# Phase O2 in docs/obdg/plan.md. kreis: Mittelpunkt und Radius in km, bbox: lon_min,lat_min,lon_max,lat_max.
+# Die DG ist klein genug, um sie ganz in Zoom 15 zu führen (Kasten der neun Gemeinden). Dazu die Städte am Rand.
+kerne:
+  - { name: Deutschsprachige Gemeinschaft, bbox: [5.95, 50.12, 6.41, 50.76] }
+  - { name: Aachen,              kreis: { lat: 50.7753, lon: 6.0839, km: 7 } }
+  - { name: Verviers,            kreis: { lat: 50.5891, lon: 5.8624, km: 5 } }
+  - { name: Malmedy,             kreis: { lat: 50.4256, lon: 6.0277, km: 3 } }

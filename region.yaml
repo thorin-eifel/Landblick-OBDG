@@ -1,0 +1,9 @@
+# Aktive Region: Deutschsprachige Gemeinschaft Belgiens plus 20 km (ADR 0001). Das Polygon baut tools/build_region.py
+# aus OpenStreetMap-Grenzen (tools/fetch_osm_grenzen.py). Die Fläche ist eine: die zwei Teile der DG (Eupener Land und
+# Belgische Eifel) wachsen mit dem Puffer zusammen.
+# Der Bezugspunkt (Eupen, Sitz von Parlament und Regierung der DG) ist nur der Ort, zu dem Entfernungen angezeigt werden.
+name: Ostbelgien plus 20 km
+mode: polygon
+reference: { name: Eupen, lat: 50.6295, lon: 6.0353 }
+polygon_file: app/data/region/obdg_plus20.json
+attribution: "Grenzen: © OpenStreetMap-Mitwirkende, ODbL 1.0"
