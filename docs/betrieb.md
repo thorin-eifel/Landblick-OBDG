@@ -316,7 +316,7 @@ Tests: `tests/test_quellen_batch2.py`.
 | KMI | `kmi_stationen` | SYNOP-Stationen Mont Rigi und Spa (Elsenborn ohne Werte); CC BY | 30 min |
 | IRCEL-CELINE | `irceline` | Luftqualität, Stationen der Wallonie; CC BY 4.0 laut Dienst | 30 min |
 
-Betriebsart: Ohne `LANDBLICK_MODE` läuft alles öffentlich, Quellen mit `nutzung: privat` fehlen dann ganz (Sammler, Export, Quellenseite). Privatmodus nur, wenn Karte und Export auf dem eigenen Rechner bleiben. Live-Lauf aller Quellen gegen die Fläche: `docs/obdg/o3-datenpipeline.md`.
+Betriebsart: Die Desktop-App läuft im Privatmodus (`LANDBLICK_MODE=privat`, gesetzt in `app/desktop.py`, solange nichts anderes vorgegeben ist), weil sie nur auf 127.0.0.1 ausliefert. Sammelstelle und Export außerhalb der App laufen ohne Vorgabe öffentlich: Quellen mit `nutzung: privat` fehlen dann ganz (Sammler, Export, Quellenseite). Wer Export oder Karte ins Netz stellt, setzt `LANDBLICK_MODE=oeffentlich` ausdrücklich, auch in der App. Live-Lauf aller Quellen gegen die Fläche: `docs/obdg/o3-datenpipeline.md`.
 
 ## Kultur und Geschichte
 

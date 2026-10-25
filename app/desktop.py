@@ -1,13 +1,14 @@
 """Lokaler Dienst der Desktop-App: Weboberfläche, Kartenabruf und Sammler in einem Prozess.
 
 Zweck:     Die Tauri-Hülle startet diesen Dienst als Begleitprozess (Sidecar). Er liefert web/ auf 127.0.0.1 aus (mit Teilabrufen
-           für PMTiles), lädt beim ersten Start die Karte für das ganze Gebiet (region.yaml: Rheinland-Pfalz plus 80 km) und läuft
+           für PMTiles), lädt beim ersten Start die Karte für das ganze Gebiet (region.yaml: Ostbelgien plus 20 km) und läuft
            als Sammelzyklus weiter. Es gibt keine Auswahl eines Mittelpunkts: das Gebiet steht fest.
 Aufruf:    python -m app.desktop --data-dir ~/.local/share/landblick [--port 0] [--pmtiles /pfad/pmtiles]
 Beispiel:  python -m app.desktop --data-dir /tmp/landblick-demo --port 8765   → http://127.0.0.1:8765/
 Ablauf:    Start → Zeile "LANDBLICK_READY port=N" auf stdout → Seite einrichtung.html (nur Fortschritt), solange Karte und Daten fehlen.
 Sicherheit: nur 127.0.0.1, Host-Prüfung gegen DNS-Rebinding, schreibende Aufrufe nur mit Header X-Landblick und gleicher Herkunft.
            Nach außen geht: Kartenabruf bei Protomaps, die Quellen laut sources.yaml.
+Modus:     Privatmodus (LANDBLICK_MODE=privat), solange nichts anderes gesetzt ist: die App veröffentlicht nichts.
 """
 from __future__ import annotations
 
@@ -48,6 +49,11 @@ def use_certifi() -> str | None:
 
 
 use_certifi()
+
+# Die Desktop-App läuft nur auf diesem Rechner (127.0.0.1) und veröffentlicht nichts. Darum gilt hier der Privatmodus: Quellen mit
+# nutzung: privat in sources.yaml (heute die Pegel Wallonien, deren Bedingungen öffentliche Verbreitung verbieten) laufen mit.
+# Eine ausdrücklich gesetzte Betriebsart bleibt; Kindprozesse (Sammler, Export) erben die Variable über env().
+os.environ.setdefault("LANDBLICK_MODE", "privat")
 
 
 def log_in_datei(data_dir: Path) -> Path | None:

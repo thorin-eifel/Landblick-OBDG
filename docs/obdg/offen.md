@@ -5,7 +5,7 @@ Stand 25. Oktober 2026. Was im Gerüst noch nicht stimmt oder nicht geprüft ist
 ## Lizenz und Recht
 
 - **Lizenz des Codes.** Das neue Repository wurde mit einer MIT-Lizenz angelegt, der übernommene Code stand in Landblick-RLP unter GPL-3.0. Das geht, solange der Betreiber alleiniger Urheber ist. Vor dem ersten Release entscheiden und die Zeile in der README angleichen.
-- **Pegel Wallonien nur privat.** Die Bedingungen des SPW verbieten die öffentliche Verbreitung ohne schriftliche Zustimmung. `wallonie_pegel` steht auf `nutzung: privat` und fehlt im öffentlichen Betrieb. Anfrage an den SPW: Entwurf in `anfrage-spw.md`, noch nicht verschickt.
+- **Pegel Wallonien nur privat.** Die Bedingungen des SPW verbieten die öffentliche Verbreitung ohne schriftliche Zustimmung. `wallonie_pegel` steht auf `nutzung: privat`: in der Desktop-App (Privatmodus als Standard) läuft sie, im öffentlichen Betrieb fehlt sie. Anfrage an den SPW: Entwurf in `anfrage-spw.md`, noch nicht verschickt.
 - **Prüfvermerke im Register.** KMI, IRCEL, SPW, BRF und LANUK sind am 25.10.2026 geprüft (O3). Die übrigen `zuletzt_geprüft` und `lizenz_hinweis` stammen aus Landblick-RLP und gelten für den Dienst, nicht für diese Fläche.
 - **Impressum und Datenschutz.** Verantwortlicher und Anschrift sind aus Landblick-RLP übernommen. Prüfen, ob für ein Angebot mit Schwerpunkt Belgien zusätzliche Angaben nötig sind.
 - **DSFA.** `docs/dsfa-entwurf.md` ist der Entwurf aus Landblick-RLP und nennt dessen Fläche. Für Ostbelgien neu fassen (O7).
