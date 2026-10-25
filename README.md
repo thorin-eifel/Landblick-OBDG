@@ -19,7 +19,7 @@ python -m app.export                       # schreibt web/data/*.json
 python tools/serve-local.py --dir web      # http://localhost:8080
 ```
 
-Die Karte braucht eigene Kacheln (`web/tiles/*.pmtiles`, nicht im Repository). Für Ostbelgien sind sie noch nicht gebaut; ohne sie zeigt die Seite Daten und Grenzen auf leerem Grund. Bau und Größen: `docs/betrieb.md`, Abschnitt Karte.
+Die Karte braucht eigene Kacheln (`web/tiles/`, nicht im Repository). `tools/kartenbasis.sh` baut Basiskarte, Relief und Suchindex in wenigen Minuten (rund 205 MB, braucht die Werkzeug-venv aus `requirements-tools.txt`). Ohne Kacheln zeigt die Seite Daten und Grenzen auf leerem Grund. Messwerte: `docs/obdg/o2-kartenbasis.md`.
 
 ## Das Gebiet
 
@@ -67,9 +67,9 @@ Alles läuft auf dem eigenen Rechner: Die Sammler rufen die Quellen ab und schre
 
 | Phase | Inhalt | Stand | Pull Request |
 |---|---|---|---|
-| O0 | Gerüst aus Landblick-RLP | wartet auf Freigabe | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
-| O1 | Raumabstraktion | wartet auf Freigabe | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
-| O2 | Kartenbasis | offen |  |
+| O0 | Gerüst aus Landblick-RLP | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
+| O1 | Raumabstraktion | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
+| O2 | Kartenbasis | wartet auf Freigabe |  |
 | O3 | Datenpipeline | offen |  |
 | O4 | Export und Auslieferung | offen |  |
 | O5 | Frontend | offen |  |
@@ -82,7 +82,7 @@ Plan und Begründung: `docs/obdg/plan.md`. Entscheidung: `docs/adr/0001-region-o
 
 - Quellen im Register: 37, davon aktiv: 37
 - Sammler (Module in `app/collectors/`): 38
-- Tests: 515 Python, 147 JavaScript
+- Tests: 519 Python, 147 JavaScript
 
 ### Quellen und Lizenzen
 

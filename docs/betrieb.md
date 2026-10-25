@@ -220,43 +220,25 @@ Die Presseseite des LBM (lbm.rlp.de/service/presse-aktuelles) ist keine Datenque
 
 ## Basiskarte (eigene PMTiles)
 
-Die Karte nutzt keine Kacheln von Dritten. `web/tiles/region.pmtiles` ist ein Ausschnitt des Protomaps-Basiskartenbaus (OSM-Daten, ODbL): Bounding Box 4.63/48.61/8.28/51.08 (120-km-Radius plus Rand), Zoom 0 bis 13 (ca. 285 MB), Luxemburg inklusive. Tiefer als Zoom 13 bricht der Abruf für die ganze Region am Protomaps-Server immer wieder ab, und Hausnummern stehen erst in Zoom 15 in den Kacheln. Darum gibt es `web/tiles/core.pmtiles` (ca. 120 MB): derselbe Build, Kern 5.90/49.49/7.02/50.21 um Irrel (rund 80 x 80 km) mit Zoom 0 bis 15. Nur die Ebenen `buildings` und `address_label` lesen daraus; fehlt die Datei, bleibt die Karte ohne Gebäudedetail. Außerhalb des Kerns gäbe es demnach kaum Gebäude; deshalb gibt es `web/tiles/ring.pmtiles` (ca. 140 MB): derselbe Kartenbau, nur Zoom 14, nur im 120-km-Kreis außerhalb des Kerns (GeoJSON mit Loch, damit nichts doppelt liegt). Das Frontend zeichnet die Gebäudeebenen aus Kern und Ring; fehlt der Ring, fehlen die Umrisse außerhalb des Kerns. Hausnummern gibt es nur im Kern, im Ring nie. Der Ring kam aus einem neueren Protomaps-Build als Region und Kern (die alten Builds liegen nicht mehr am Server); beim nächsten Gesamtbau mit `tools/build_tiles.sh` sind alle drei wieder aus einem Guss. Gebaut mit `tools/build_tiles.sh [JJJJMMTT]` (lädt nur den Ausschnitt per Teilabruf, nicht den Planet; braucht die `pmtiles`-CLI in `tools/bin/`). Das Frontend liest die Datei im Browser per HTTP Range (pmtiles.js, MapLibre); Stil aus `@protomaps/basemaps` mit Option `lang: 'de'` (nur damit liefert die Bibliothek Beschriftungen), ohne Symbol-Layer (POIs, Einbahnpfeile; sie bräuchten Sprite-Bilder). Schrift: nur „Noto Sans Regular“ aus `web/fonts/` (Bereiche 0–511 und Satzzeichen). Hell = Grau, Dunkel = Dunkel.
+Die Karte nutzt keine Kacheln von Dritten. Drei Archive aus dem Protomaps-Basiskartenbau (OSM, ODbL), gebaut mit `tools/build_region_tiles.py` für das Polygon aus `region.yaml`:
 
-Ehrlich bei Ausfall: Fehlt die Datei oder kann der Server keine Teilabrufe, bleibt die Karte ohne Basis benutzbar und der Kartenhinweis sagt „Basiskarte nicht verfügbar“.
+| Datei | Inhalt | Größe (Build 20261025) |
+|---|---|---|
+| `web/tiles/region.pmtiles` | ganze Region, Zoom 0 bis 13 | 42 MB |
+| `web/tiles/ring.pmtiles` | Zoom 14 außerhalb der Kerne (Gebäudeumrisse, Straßennamen) | 21 MB |
+| `web/tiles/core.pmtiles` | Kerne aus `tools/tile_cores.yaml`, Zoom 14 und 15 (Hausnummern) | 37 MB |
 
-Die lokale Ansicht auf dem Mac nutzt `tools/serve-local.py` (versteht Range), nicht `python -m http.server`.
+Kerne: der Kasten der neun DG-Gemeinden (die DG ist klein genug, um sie ganz in Zoom 15 zu führen), dazu Aachen, Verviers und Malmedy. Der Bau läuft in Stücken und setzt nach einem Abbruch fort; Exit 2 heißt „Befehl wiederholen“. Gemessen in einer Cloud-Sitzung am 25.10.2026: alle drei Stufen in unter einer Minute. Prüfung: `python tools/check_tiles.py --dir web/tiles` (zwölf Orte, Zoom 8, 13, 14, 15; Exit 1 bei Lücke).
 
-Offen: Beschriftungen (Straßen, Orte) brauchen Schriftdateien (Glyphen) auf dem Server; Zoom über 13 wird nur hochskaliert; Kartenstand ist der Build vom 29.09.2026, Aktualisierung von Hand.
+Alles auf einmal, samt Höhenkacheln, Geländefaktoren und Suchindex: `tools/kartenbasis.sh` (Kopf des Skripts nennt Parameter und Umgebung). Die pmtiles-CLI holt das Skript selbst, wenn Go installiert ist; sonst von github.com/protomaps/go-pmtiles in `tools/bin/` legen.
 
-### Gebäude aus den Hausumringen
+Das Frontend liest die Archive im Browser per HTTP Range (pmtiles.js, MapLibre). Fehlt eine Datei oder kann der Server keine Teilabrufe, bleibt die Karte ohne Basis benutzbar und der Kartenhinweis sagt „Basiskarte nicht verfügbar“. Lokal läuft das nur mit `tools/serve-local.py` (versteht Range), nicht mit `python -m http.server`.
 
-Die OSM-Gebäude sind lückenhaft: Um Irrel fehlte beim Abgleich mit dem Liegenschaftskataster gut jedes siebte Gebäude (217 von 1545, meist Garagen und Schuppen, aber auch Wohnhäuser bis 150 m²). Darum gibt es `web/tiles/gebaeude.pmtiles`: in Rheinland-Pfalz die amtlichen Hausumringe (© GeoBasis-DE / LVermGeoRP, dl-de/by-2-0, Daten bearbeitet), außerhalb des Landes (Luxemburg, Saarland, Frankreich, Hessen ...) die OSM-Gebäude aus Kern und Ring, deren Schwerpunkt nicht im Land liegt. Eine Quelle, kein Doppelzeichnen. Zoom 15 trägt alle Umrisse, Zoom 14 nur die ab 40 m² (Umgrenzungsrechteck); darüber zeichnet MapLibre die Zoom-15-Kacheln hochgezoomt. Zoom-14-Kacheln gelten ab Kartenzoom 14, Zoom 15 ab 15 (MapLibre 5 erlaubt bei Vektorquellen nur das Kachelmaß 512; ein früheres `tileSize: 256` am Kern führte dazu, dass der Kern gar nicht lud und um Irrel nur die groben Gebäude aus Zoom 13 standen). Hausnummern bleiben im Kern (`core.pmtiles`).
-
-Bauen (einmal je Datenstand der Hausumringe, rund 5 Minuten, 2 GB Arbeitsspeicher):
-
-```
-curl -fLO https://geobasis-rlp.de/data/hu/current/zip/HAUSUMRINGE_RP.zip     # 334 MB, ganz Rheinland-Pfalz
-unzip -o HAUSUMRINGE_RP.zip 'gebaeude_hu.*'                                  # .shp und .dbf (aus der .dbf wird nur die Spalte GFK gelesen)
-python tools/build_gebaeude_rlp.py --hu gebaeude_hu.shp --core web/tiles/core.pmtiles --ring web/tiles/ring.pmtiles \
-    --grenze web/geo/rlp.geojson --out web/tiles/gebaeude.pmtiles
-```
-
-Gebäudefunktion: Aus der `.dbf` liest das Werkzeug nur die Spalte `GFK` (ADV-Codeliste, z. B. `31001_3041` Kirche) und ordnet sie in `klasse_von_gfk()` acht Klassen zu (wohnen, wirtschaft, garage, ueberdachung, technik, oeffentlich, religion, sonst). Das Attribut `klasse` steht im MVT neben `kind`; die Farben stehen in `web/js/gebaeude-farben.js` (ein Test hält beide Listen gleich), die Zeichenerklärung zeigt sie. Gebäude aus OSM außerhalb des Landes haben keine Klasse und bleiben weinrot. Der Code `31001_2000` heißt „Gebäude für Wirtschaft oder Gewerbe“, ist aber nach der Größe (Median 56 m²) überwiegend Schuppen und Scheune; die Karte nennt es deshalb so in der Erklärung. Datenschutz: Gemeindeschlüssel, Objektkennung und Kachelnummer der Quelle bleiben unberührt, Adressen und Eigentümer enthält die Quelle nicht. Fehlt die `.dbf`, entsteht die Datei ohne Klassen; fehlt die Datei, zeichnet die Karte wie vorher die OSM-Gebäude aus Kern und Ring. Vermerk steht unter der Karte, auf der Quellenseite und in den Fußzeilen; das Jahr (`GEB_JAHR` in `web/js/lage/zustand.js`) ist das Jahr des Datenbezugs und bei jedem neuen Bezug anzupassen.
+Eigene Gebäudeebene (`web/tiles/gebaeude.pmtiles`): In Landblick-RLP kamen dort die amtlichen Hausumringe hinein. Für Ostbelgien gibt es sie noch nicht; Kandidat ist PICC (Wallonien), siehe `docs/obdg/quellen-kandidaten.md`. Ohne Datei zeichnet die Karte die OSM-Gebäude aus Kern und Ring.
 
 ### Rechtsklick-Auskunft
 
-Rechtsklick auf die Karte (auf Touchgeräten: Finger lang halten) öffnet ein kleines Fenster mit Höhe (Geländemodell der Karte), Koordinaten (Dezimalgrad, Grad/Minuten/Sekunden, UTM 32 ETRS89), Ort, Gemeinde mit Verbandsgemeinde und Kreis. Code: `web/js/lage/kontext.js` (Fenster) und `web/js/ortsinfo.js` (Punkt in Fläche, UTM; getestet in `tests/js/ortsinfo.test.mjs`). Die Namen kommen aus `web/geo/verwaltung.json`, die der Browser beim ersten Rechtsklick holt (3,3 MB, gz rund 1,2 MB), und aus `web/geo/kreise.geojson` (Kreise außerhalb von Rheinland-Pfalz). Es gibt keine Anfrage an Dritte.
-
-Bauen (bei neuem Datenstand der Verwaltungseinheiten oder des Wohnplatzverzeichnisses, rund 5 Sekunden):
-
-```
-curl -fLO https://geobasis-rlp.de/data/inspire-annexi/current/xml/dlkm_au.zip                # 34 MB, Verwaltungseinheiten (GML)
-curl -fLO https://geobasis-rlp.de/data/wohnplatz/current/zip/WOHNPLATZVERZEICHNIS_RP.zip     # 0,4 MB, Ortsteile und Wohnplätze
-unzip -o dlkm_au.zip; unzip -o WOHNPLATZVERZEICHNIS_RP.zip
-python tools/build_verwaltung.py --au dlkm_au.gml --wohnplatz WOHNPLATZ_RP_wohnplcsv.CSV --out web/geo/verwaltung.json --stand "Dezember 2025"
-```
-
-Inhalt: 2324 Gemeinden als Flächen (vereinfacht auf rund 5 m, ganzzahlige Deltas), 135 Verbandsgemeinden, 38 Kreise und Städte, 10306 Ortsteile und Wohnplätze (je Gemeinde einsortiert). „Ort“ ist der nächste Ortsteil innerhalb der Gemeinde, Wohnplätze (Höfe, Mühlen) zählen nicht. Das Wohnplatzverzeichnis enthält auch Einwohnerzahlen je Ortsteil; sie werden nicht übernommen. Grenzen: direkt an einer Gemeindegrenze kann der Nachbar treffen (Vereinfachung); außerhalb von Rheinland-Pfalz (Saarland, Luxemburg ...) gibt es keine Gemeinde, nur den Kreis aus `kreise.geojson`. **Gemarkung fehlt**: Der offene Kleindatensatz enthält sie nicht, sie steckt nur in den Flurstückdaten (INSPIRE `dlkm_cp` 1,3 GB, `lb.zip` 1,9 GB).
+Rechtsklick auf die Karte (auf Touchgeräten: Finger lang halten) öffnet ein kleines Fenster mit Höhe (Geländemodell der Karte), Koordinaten (Dezimalgrad, Grad/Minuten/Sekunden, UTM ETRS89; die Zonengrenze 31/32 läuft bei 6° Ost durch die Region), Gebiet und Land. Gebiet heißt Gemeinde in Belgien, Luxemburg und den Niederlanden, Kreis in Deutschland. Die Flächen kommen aus `web/geo/gebiete.geojson` (`tools/build_region.py`, OSM, 226 KB), die der Browser beim ersten Rechtsklick holt. Es gibt keine Anfrage an Dritte. Code: `web/js/lage/kontext.js` und `web/js/ortsinfo.js` (getestet in `tests/js/ortsinfo.test.mjs`). Ortsteile und Teilgemeinden (Eynatten, Elsenborn) fehlen noch.
 
 ## Live, Stau, Icons
 
@@ -274,44 +256,20 @@ tail -f data/logs/live.log
 
 ## Höhenrelief
 
-Schummerung, Höhenfärbung, Höhenlinien (mit Beschriftung der Hauptlinien) und Höhenanzeige unter dem Zeiger.
-Datenbasis: Terrarium-Kacheln bis Zoom 14. In Rheinland-Pfalz stammen sie aus dem DGM1 des Landes (LVermGeoRP, 1 m Gitter, dl-de/by-2-0), außerhalb aus den Mapzen Terrain Tiles (AWS Open Data; EU-DEM und SRTM, rund 30 m). Messung bei Irrel: Mapzen weicht vom Landesmodell im Mittel um 9,6 m ab, an Einzelstellen bis 36 m.
-Zwei Schritte, beide einmalig und wiederaufnehmbar:
+Schummerung, Höhenfärbung, Höhenlinien (mit Beschriftung der Hauptlinien) und Höhenanzeige unter dem Zeiger. Datenbasis: Mapzen Terrain Tiles auf AWS Open Data (EU-DEM und SRTM, rund 30 m), Terrarium-Kodierung, Zoom 6 bis 12:
 
-    .venv/bin/python tools/build_dem.py                          # Mapzen Zoom 6 bis 12, ca. 200 MB nach web/tiles/dem-base/ (Rückfall und Außenbereich)
-    .venv/bin/python tools/build_dem_rlp.py --check              # zählt: rund 21 000 Landeskacheln, 32 GB Download
-    .venv/bin/python tools/build_dem_rlp.py                      # lädt, mittelt auf 4 m (Arbeitsordner _scratch/dgm1, ca. 3 GB), schreibt web/tiles/dem/ Zoom 6 bis 14 (ca. 1,5 GB)
-    .venv/bin/python tools/build_dem_rlp.py --budget-s 900       # in Portionen, Exit 2 = Befehl wiederholen
-    .venv/bin/python tools/build_dem_rlp.py --keep-raw           # wie oben, legt die 1-m-Rohkacheln zusätzlich in <work>/raw/ ab (rund 22 GB); die Felswände laden dann nicht ein zweites Mal
+    .venv/bin/python tools/build_dem.py               # 945 Kacheln, 103 MB nach web/tiles/dem/, dazu README.txt und meta.json
+    .venv/bin/python tools/build_dem.py --check       # nur zählen
 
-Die Landesdaten kommen von `geobasis-rlp.de/data/dgm1/` (Dateiliste `meta4/dgm1_tif_07.meta4`, Prüfsummen werden verglichen). Das Werkzeug legt `tiles/dem/meta.json` mit dem Namensnennungstext an (Jahre der Befliegung); die Karte zeigt ihn unten rechts. Außerhalb von RLP sind die Kacheln ab Zoom 13 nur aus Mapzen hochgerechnet (kein Gewinn an Genauigkeit, aber lückenlos). An der Kante der Landesabdeckung weicht Mapzen im Mittel um etwa 10 m vom DGM1 ab. Damit daraus keine sichtbare Stufe (gerade Naht in Schummerung und Höhenlinien) wird, setzt `blend_bias()` den Versatz zwischen beiden Quellen über `FADE_PX` (120 px, rund 730 m bei Zoom 14) nach außen fort und blendet ihn mit cos² aus; Kacheln werden mit gleichem Rand gerechnet, damit Nachbarn ohne Sprung anschließen. Nach einer Änderung daran muss `web/tiles/dem` neu gebaut und das Relief neu gepackt werden (`python tools/build_dem_rlp.py --no-fetch --force --only-gaps`, dann `tools/pack_tiles.py`). Für Luxemburg, Saarland, NRW, Hessen, Baden-Württemberg gibt es eigene offene Geländemodelle, die sich im selben Schema einbauen ließen (noch nicht geprüft, Lizenzen offen).
-Die Kacheln liegen nicht im Repository (`.gitignore`) und gehören in den Kachelordner (`web/tiles/dem/`, inkl. `README.txt` als Prüfdatei und `meta.json`). `dem-base/` und `_scratch/` bleiben lokal.
-Höhenlinien rechnet `web/vendor/maplibre-contour` (BSD-3) im Browser in einem Worker (ab Zoom 7, bis 2,5 m Abstand bei Zoom 16); Ziffern kommen aus `web/fonts/` (Noto Sans, OFL).
-Fehlt `tiles/dem/README.txt`, bleibt die Karte ohne Relief und läuft normal. Code: `web/js/relief.js`.
-Im Menü Geographie (Gelände und Gebäude) gibt es zwei Schalter: „Berge und Täler (Schattierung und Farbe)“ (`relief`) und „Höhenlinien“ (`contours`, mit Beschriftung). Beide laufen über dieselben Höhenkacheln und sind einzeln schaltbar; die Lichtquelle am Zeiger hängt an der Schummerung, die Höhe unter dem Zeiger und die Legende an einem von beiden.
-Namensnennung steht auf `quellen.html`. Höhenwerte sind Raster (in RLP ca. 6 m, sonst ca. 30 m), keine Vermessung.
+Zoom 12 genügt: ein Bildpunkt misst in Ostbelgien rund 24 m, die Quelle ist rund 30 m fein. Höher wäre hochgerechnet und kostete das Vierfache je Stufe (Zoom 14: 12 972 Kacheln). `meta.json` meldet `maxzoom: 12`, `relief.js` vergrößert darüber selbst. Ein feineres Modell (Relief Wallonie, DGM1 NRW) käme als eigenes Werkzeug; Lizenzen sind offen (`docs/obdg/quellen-kandidaten.md`).
 
-Zoom 15 und 16 aus dem 1-m-Raster (optional, setzt den Rohordner der Felswände voraus):
+Geländefaktoren für die Windansicht (Talachse, Tal- und Kammstärke) rechnet `tools/build_terrain.py` aus den Höhenkacheln Zoom 10 nach `web/data/terrain.png` und `terrain.json` (zusammen 75 KB).
 
-    .venv-dem/bin/python tools/build_dem_hires.py --raw dgm1-work/raw --out web/tiles/dem --bbox 7.62 50.08 7.92 50.24 --cover
+Die Kacheln liegen nicht im Repository (`.gitignore`). Fehlt `tiles/dem/README.txt`, bleibt die Karte ohne Relief und läuft normal. Höhenlinien rechnet `web/vendor/maplibre-contour` (BSD-3) im Browser in einem Worker; Ziffern kommen aus `web/fonts/` (Noto Sans, OFL). Namensnennung steht auf `quellen.html`. Höhenwerte sind Raster, keine Vermessung.
 
-Je Zielkachel wird bilinear im 1-m-Gitter abgetastet (Zoom 15 ca. 3,1 m, Zoom 16 ca. 1,5 m je Pixel), die Höhe auf 1/16 m gerundet (spart rund die Hälfte der PNG-Größe, Schummerung zeigt keine Stufen). Pixel ohne Landesdaten kommen aus der Elternkachel; `--cover` schreibt außerhalb des Landes Kacheln aus der Elternkachel, damit relief.js dort nicht ins Leere fragt. Messung Loreley (Steilgelände): Zoom 15 rund 50 KB/km², Zoom 16 rund 160 KB/km²; `--measure` rechnet vorab. Danach `hires: {"maxzoom": 16}` in `tiles/dem/meta.json` eintragen, erst dann nutzt relief.js die Kacheln (sonst bleibt es bei Zoom 14 mit Überzoom). Höhenanzeige unter dem Zeiger bleibt bei Zoom 14.
+Die Desktop-App kennt ein Nachladepaket für höhere Reliefstufen (`PAKETE_MANIFEST` in `app/desktop.py`); für Ostbelgien ist es leer und kommt erst mit einem feineren Modell zurück.
 
-### Felswände aus dem DGM1
-
-In RLP stammen Felswände nicht aus OSM, sondern aus dem 1-m-DGM1: `tools/build_klippen_dgm.py` findet die Steilzone (Hysterese 55/47 Grad auf dem um 1,5 m geglätteten Gelände), macht daraus Flächen und leitet je Wand drei Ebenen ab: `wand` (Polygon mit Löchern), `kante` (Oberkante, Wand rechts der Laufrichtung) und `schraffur` (kurze Striche in Fallrichtung, von oben nach unten). `drop` ist die Wandhöhe in m (mindestens 5 m). Ausgabe sind Vektorkacheln Zoom 13 in `tiles/klippen/` (mit `meta.json`, Namensnennung „Daten bearbeitet").
-
-Der Lauf braucht die 1-m-Rohkacheln. Standardmäßig lädt er nur Kilometerkacheln mit Steilhängen im 4-m-Raster samt Nachbarn, mit `--all-tiles` das ganze Land. Rohkacheln liegen komprimiert in `<work>/raw/` (rund 22 GB für RLP), ein Abbruch setzt beim nächsten Aufruf fort. Lief vorher `build_dem_rlp.py --keep-raw` mit demselben Arbeitsordner, sind sie schon da und es wird nichts mehr geladen (Kacheln, die ohne `--keep-raw` entstanden, holt der Lauf nach).
-
-    .venv-dem/bin/python tools/build_klippen_dgm.py --work ~/Claude/Landblick/dgm1-work --out web/tiles/klippen --all-tiles   # RLP: ca. 21 000 Wände, 0,9 Mio. Striche, 24 MB; Download 33 GB, Gesamtlauf rund 3 Stunden
-    .venv-dem/bin/python tools/build_klippen_dgm.py --work ... --out ... --bbox 7.70 50.10 7.76 50.14                     # Ausschnitt (Loreley), 20 Sekunden
-
-**Rohdaten aufräumen (zuletzt).** Relief und Felswände hinterlassen im Arbeitsordner (`_scratch/dgm1`) Rohdaten: `raw/` (1-m-Kacheln, rund 22 GB für RLP) und `red/`. Wer lokal installiert, braucht sie danach nicht mehr. `tools/rohdaten_aufraeumen.py` löscht den Ordner erst, wenn alles fertig ist: Relief und Felswände mit Metadaten und Kacheln vorhanden, Basiskarte da, die App antwortet mit 200 und der Export ist lesbar. Ohne `--ja` ist es ein Probelauf, der nur zeigt, was frei würde. Liegt im Arbeitsordner eine Datei `BEHALTEN.txt`, löscht es nichts, bis sie von Hand entfernt wird. Fremde Dateien im Ordner und unsichere Pfade (Home, Projektordner) lehnt es ab. Der Installer (`install.py`) ruft am Ende, wenn der Webserver antwortet und `_scratch/dgm1` existiert, denselben Probelauf auf. Besteht er, fragt der Installer im Terminal, ob gelöscht werden soll; ohne Terminal oder bei Nein bleibt alles liegen. `--ja` löscht nie Rohdaten, dafür gibt es `--rohdaten-loeschen`.
-
-    .venv/bin/python tools/rohdaten_aufraeumen.py          # Probelauf
-    .venv/bin/python tools/rohdaten_aufraeumen.py --ja     # prüfen und löschen
-
-Fehlt `tiles/klippen/meta.json`, zeigt die Karte wie bisher die OSM-Klippen. Mit Kacheln werden OSM-Klippen innerhalb von RLP ausgeblendet, außerhalb bleiben sie. Schmale Schluchten (Teufelsschlucht, Felsspalten) fallen durch die Glättung aus der Hysterese heraus. Deshalb sucht `_slots` zusätzlich Spalten: mindestens `--slot-depth` m (Standard 5) tiefer als die Umgebung, Flanken steiler als 40 Grad, Mindestfläche 40 m². Flachere Gräben und Hohlwege bleiben draußen; `--slot-depth 0` schaltet die Suche ab. Das Ergebnis steht in `meta.json` (`slot_depth_m`). Nach einer Änderung der Schwelle muss das ganze Land neu gebaut werden, in ein neues Verzeichnis, dann tauschen. Die Flächen sind abgeleitet, keine Vermessung; künstliche Böschungen (Steinbrüche, Einschnitte) erscheinen ebenfalls, wenn sie höher als 5 m und steiler als 55 Grad sind.
+Felswände und Hangneigung aus einem 1-m-Geländemodell gab es in Landblick-RLP (`tiles/klippen/`, `tiles/hang/`). Für Ostbelgien fehlen sie; die Karte zeigt die OSM-Klippen. Die Mechanik im Frontend bleibt, bis ein Modell da ist.
 
 ## Weitere Quellen (Umwelt)
 
@@ -369,19 +327,9 @@ Ab 1800 px Breite skaliert die Oberfläche über die Schriftgröße der Wurzel (
 
 **Layout.** Ab 1001 px Breite füllt die Karte den ganzen Rahmen. Zeitraum, Darstellung, Ereignisse und Geographie (links, einklappbar) und die Liste (rechts) schweben darüber; darunter stehen die Teile untereinander. Kartensteuerung und Höhenlegende weichen den schwebenden Karten aus (`app.css`, letzter Abschnitt).
 
-**Grenzen.** Alle Verwaltungsgrenzen der Kacheln (Staat, Land, Kreis, Gemeinde; `BOUNDS` in `stil.js`) sehen gleich aus: Punktlinie in einer Farbe je Ansicht, Schalter wie bisher je Ebene. Die Landesgrenze von Rheinland-Pfalz ist die einzige Ausnahme: rote Linie, 2 px, darunter fünf graue Linien (je 1 px, Abstand 1,5 bis 5,5 px nach außen, Deckkraft fallend) als Verlauf. Die Kacheln tragen keine Eigenschaft, die RLP von anderen Ländern trennt; die Linie kommt deshalb aus `web/geo/rlp.geojson` (BKG VG250, `VG250_LAN`, auf 20 m vereinfacht), gebaut mit `python tools/build_landesgrenze.py --zip <vg250…zip>`. Die Datei ist eine eigene Quelle (`rlp-grenze`) und läuft mit dem Schalter „Landesgrenzen". Abweichung zur OSM-Linie der Kacheln: Zehnermeter, bei Zoom 13 und höher sieht man daneben stellenweise einzelne Punkte der Kachellinie. Fehlt die Datei, bleibt die Karte ohne rote Linie, die gepunktete Landesgrenze aus den Kacheln bleibt. Das Vorzeichen des Verlaufs (negativer `line-offset` = außen) ist an der Karte geprüft; wer die Datei anders orientiert, dreht den Verlauf nach innen.
+**Grenzen.** Alle Verwaltungsgrenzen der Kacheln (Staat, Land, Kreis, Gemeinde; `BOUNDS` in `stil.js`) sehen gleich aus: Punktlinie in einer Farbe je Ansicht, Schalter wie bisher je Ebene. Die Grenze der Deutschsprachigen Gemeinschaft ist die einzige Ausnahme: rote Linie, 2 px, darunter fünf graue Linien (je 1 px, Abstand 1,5 bis 5,5 px nach außen, Deckkraft fallend) als Verlauf. Die Kacheln tragen keine Eigenschaft, die die DG von Wallonien trennt; die Linie kommt aus `web/geo/kern.geojson` (OSM-Relation 2425209, auf 20 m vereinfacht, `tools/build_region.py`). Quelle `kern-grenze`, Schalter „Landesgrenzen“. Fehlt die Datei, bleibt die Karte ohne rote Linie.
 
-**Vignette.** Die schwarze Vignette der Lagekarte folgt der Landesgrenze von Rheinland-Pfalz, nicht einem Kreis: klar bis 80 km außerhalb der Grenze, danach über 30 km stufenlos (Smoothstep) auf Schwarz. Gebaut wird sie aus `web/geo/rlp.geojson` mit `python tools/build_vignette.py` (Abstand zur Grenze in UTM 32N, ein Graustufen-PNG mit Alpha, `web/geo/vignette.png` plus `vignette.json`, zusammen etwa 16 KB). Die Seite legt das PNG als Bildquelle über die Karte und liest daraus auch die Ausblendung für Wind und Regenwellen (`lage/vignette.js`). Fehlt eine der beiden Dateien, nimmt die Karte den alten Kreis um `meta.radius_km`. Anderes Land oder anderer Abstand: `build_landesgrenze.py --land …`, dann `build_vignette.py --abstand-km … --fade-km …`. Nicht angefasst ist der Radar-Sweep; er zeichnet weiter um den Mittelpunkt.
-
-**LGB Daten (Kartendienste des Landesamts für Geologie und Bergbau).** Eigene Gruppe im Ebenenmenü, 16 ausgewählte Ebenen in den Themen Bergbau, Boden, Erdbeben, Geologie, Geothermie, Hydrogeologie, Ingenieurgeologie, je Dienst die Ebenen als Schalter, dazu Deckkraft und „Alle LGB-Ebenen aus“. Aufbau: `web/geo/lgb.json` (Katalog, 13 Dienste, 16 Ebenen) wird mit `python tools/build_lgb_katalog.py` aus den GetCapabilities unter `mapserver.lgb-rlp.de/cgi-bin/mc_*` gebaut (ein Abruf je Dienst, eine Sekunde Pause; `--from-dir` liest gespeicherte XML, `--save-dir` legt sie ab). Technische Hilfsebenen der Dienste (Kachelquelle, Vektorabfrage, Download-Auswahl) stehen in `AUSGEBLENDET` und fehlen im Katalog. Die Seite fragt nie Capabilities ab, sie holt nur GetMap-Kacheln (EPSG:3857, 256 px) für eingeschaltete Ebenen; Code: `web/js/lage/lgb.js`, reine Funktionen in `web/js/lgb-katalog.js`.
-
-Datenschutz: Das ist (zusammen mit „Landesdaten“, siehe unten) der einzige Fall, in dem der Browser etwas bei einem Dritten holt. Deshalb ist alles aus, bis die Besucherin den Hinweis im Menü bestätigt („Verstanden, Karte laden“); die Bestätigung gilt nur bis zum Neuladen und wird nicht gespeichert. Die Content-Security-Policy erlaubt `https://mapserver.lgb-rlp.de` nur in `web/index.html`, die übrigen Seiten bleiben bei `'self'`. Datenschutzerklärung und Quellenregister (`lgb_wms`, `art: client`) nennen das. Quellenvermerk laut LGB („©LGB-RLP <Jahr>, dl-de/by-2-0, www.lgb-rlp.de [Daten bearbeitet]“) steht unter der Karte, solange eine Ebene an ist. Höchstens sechs Ebenen gleichzeitig. Fällt ein Dienst aus, steht „n nicht erreichbar“ im Menü, der Rest der Karte bleibt. Die Ebenen liegen über der Basiskarte und unter Straßen und Beschriftung; nach einem Themenwechsel werden sie wieder dorthin gesetzt (`placeLgb`).
-
-Nicht enthalten: Objektabfrage (GetFeatureInfo), WFS, die Karte „Cross Compliance Erosion“ (sie steht auf der Onlinekarten-Seite, aber nicht in der OGC-Dienste-Liste), Legenden. Der Katalog ist ein Stand vom Tag des Abrufs; ändert das LGB sein Angebot, wird er neu gebaut.
-
-**Landesdaten (offene Kartendienste weiterer Landesstellen).** Zweite Gruppe im Ebenenmenü, gleiche Bedienung wie „LGB Daten“ (ein Code in `lage/lgb.js`, zwei Menüs mit eigenem Hinweis, eigener Deckkraft, eigenem Vermerk und je höchstens sechs Ebenen). Gruppiert nach Landesstelle (Vermessung und Geobasisdaten, Umwelt, Wasserwirtschaft, Straßen, Ländlicher Raum). Die Auswahl (16 Ebenen) steht in `tools/katalog_auswahl.json` und gilt für beide Menüs; `--alle` baut den vollen Katalog. Verworfen wurde, was die App schon hat (Straßen, Gewässer, Grenzen, Gelände, Hochwasser-Pegel, Wetter, Warnungen), Mehrfach-Fassungen derselben Karte, Nischenthemen und Dienste ohne CORS oder mit unvollständiger Zertifikatskette. Die Geoportal-Suche (nur offene Daten) liefert die Kandidaten: `python tools/crawl_geoportal.py --out M.json`, dann `python tools/build_landesdaten_katalog.py --meta M.json` schreibt `web/geo/landesdaten.json`. Lizenz und Vermerk stehen je Dienst im Katalog. Zugelassen sind nur https-Server, die im Katalog unter `hosts` stehen; jeder davon steht auch in der Content-Security-Policy von `web/index.html`. Neuer Server im Katalog heißt: CSP dort nachziehen (der Test prüft das).
-
-Was fehlt und warum, steht im Katalog unter `ausgelassen`: Kommunen (bewusst nicht), Dienste nur mit WMS 1.1.1 oder ohne EPSG:3857, Server ohne CORS (Umgebungslärm, Naturschutzkarten), und Server, deren Zertifikatskette ich nicht prüfen konnte (Statistisches Landesamt mit 64 Diensten, SGD Nord ROK, LANIS). Letzteres ist kein Urteil über die Server, sondern eine Grenze der Prüfumgebung; Wiederholung von einem Rechner mit normalem Zertifikatsspeicher.
+**Vignette.** Die schwarze Vignette folgt der Grenze der DG: klar bis 20 km außerhalb, danach über 10 km stufenlos (Smoothstep) auf Schwarz. Gebaut mit `python tools/build_vignette.py` aus `web/geo/kern.geojson` (`web/geo/vignette.png` plus `vignette.json`, zusammen rund 20 KB). Die Seite liest daraus auch die Ausblendung für Wind und Regenwellen (`lage/vignette.js`). Fehlt eine der beiden Dateien, nimmt die Karte einen Kreis um `meta.radius_km`.
 
 **Straßen.** Autobahnen, Bundes-/Landstraßen und Anschlüsse (auch Brücken, Tunnel) sind gelborange (`#f6a81c`) mit 1 px schwarzer Kontur. Die Umstellung passiert beim Aufbau des Basiskartenstils (`mainRoad` in `web/js/lage/stil.js`); Grenzlinien des Stils (`boundaries*`) werden nicht gezeichnet.
 
@@ -391,27 +339,8 @@ Was fehlt und warum, steht im Katalog unter `ausgelassen`: Kommunen (bewusst nic
 
 **Flugzeugklassen.** Der Collector speichert `klass`: `civil`, `mil` (Militär-Kennzeichen der adsb.lol-Datenbank, `dbFlags` Bit 0), `heli` (Kategorie A7) oder `milheli`. Kennzeichen, Hex-Code und Typ bleiben draußen, gespeichert wird nur die Klasse. Darstellung: zivil = dunkles Flugzeug, militärisch = violett im Ring, Hubschrauber = eigenes Symbol (uxwing „helicopter“, Seitenansicht, dreht sich nicht). Die Klasse ist so gut wie die Datenbank von adsb.lol: nicht gemeldete oder nicht erfasste Militärflugzeuge erscheinen als zivil.
 
-### Hangneigung aus dem DGM1
-
-`tools/build_hang_rlp.py` rechnet aus dem 1-m-DGM1 drei Neigungsklassen (ab 15, 25 und 35 Grad) als Vektorflächen und schreibt Kacheln Zoom 14 nach `web/tiles/hang/` (Ebenen `ab15`, `ab25`, `ab35`, dazu `meta.json` mit Namensnennung). Die Karte zeigt sie als Ebene „Hangneigung“ (unter Relief, standardmäßig aus), bewusst durchscheinend: die drei Flächen liegen ineinander und addieren sich nach innen auf rund 32 % Deckkraft, die Klippenfläche hat 20 %. Wandstriche und Oberkante der Klippen bleiben deckend, damit Schummerung, Höhenlinien und Neigung zusammen ein genaueres Bild ergeben. Ohne Kacheln gibt es die Ebene nicht.
-
-Der Lauf teilt das Land in Blöcke von 4 km (+ 1 km Rand zum Glätten), rechnet sie parallel und ist wiederaufnehmbar (Marken unter `web/tiles/hang_parts/_done`). Masken reichen 1 m über den Blockrand, die Teilstücke einer Kachel werden vereinigt, deshalb gibt es keine Nähte. Messung RLP (Mac, 6 Arbeiter): 1 391 Blöcke, 33 Minuten, 8 845 Kacheln, 144 MB gzip (188 MB ungepackt), davon `ab15` 78 MB, `ab25` 49 MB, `ab35` 19 MB. Speicherbedarf rund 1 GB je Arbeiter.
-
-    python tools/build_hang_rlp.py --raw ~/Claude/Landblick/dgm1-work/raw --out web/tiles/hang --workers 6
-    python tools/build_hang_rlp.py ... --bbox 6.3 49.7 6.6 49.95       # Ausschnitt
-    python tools/build_hang_probe.py --raw ... --center 6.45 49.85 --size-km 3 --out /tmp/hang   # nur messen
-
-Parameter und ihre Wirkung: `--sigma` (Glättung des Geländes, Standard 1 m), `--simplify` (Umrisse, 1,5 m), `--min-area` (kleinste Fläche, 40 m²), `--classes` (Schwellen in Grad). Die Deckkraft steht in `web/js/lage/stil.js` (`hangLayers`, `cliffLayers`).
-
-### Relief nachladen (dem-hoch)
-Das Relief liegt in zwei Paketen: `dem.pmtiles` (Zoom 6–12) im Installer, `dem-hoch.pmtiles` (Zoom 13/14, rund 4,3 GB) wird beim ersten Start im Hintergrund geholt. Der Server liefert Kacheln aus `dem` und fällt für fehlende (hohe) Zoomstufen auf `dem-hoch` zurück; bis das Nachladepaket da ist, wird Zoom 12 überzoomt.
-```
-python -m app.pakete --manifest https://…/dem-hoch.pmtiles.manifest.json --dest ~/.local/share/landblick/tiles
-```
-Abbruch ist unkritisch: `dem-hoch.pmtiles.part` wächst Teil für Teil, jeder Lauf prüft die fertigen Teile neu und setzt das angefangene per Range fort. Umbenannt wird erst nach bestandener Gesamtprüfsumme. Bedarf: Paketgröße plus 200 MB frei. Die Adresse steht in `PAKETE_MANIFEST` (`app/desktop.py`), Überschreiben mit `LANDBLICK_PAKETE_MANIFEST`, Abschalten mit `aus`. Fehler: `/api/state` → `nachladen.error`, Log `landblick.pakete`. Namensnennung: die Landesdaten (DGM1, © GeoBasis-DE / LVermGeoRP, dl-de/by-2-0) stehen in den Metadaten der Pakete.
-
 ### Mitgelieferte Pakete im Installer
-`desktop/stage-pakete.sh` kopiert `dem.pmtiles` (Zoom ≤ 12), `klippen`, `hang`, `gebaeude` und `suche_geo.json` nach `desktop/src-tauri/pakete/` (nicht im Git). `tauri.conf.json` nimmt den Ordner als Ressource auf, `main.rs` übergibt ihn dem Dienst als `--pack-dir`. Reihenfolge der Suche für `/tiles/`: Datenordner, Installer-Ressource, `web/tiles`. Erlaubt ist so nur Lesen; `/data/` kommt weiter nur aus dem Datenordner, außer `suche_geo.json`. Gesamtgröße ohne Basiskarte rund 1,1 GB. Ablauf: `desktop/build-sidecar.sh` → `desktop/stage-pakete.sh` → `cd desktop && npx tauri build`. Ungetestet auf Windows (Installer wurde noch nicht gebaut).
+`desktop/stage-pakete.sh` kopiert `dem.pmtiles` und `suche_geo.json`, dazu `klippen`, `hang` und `gebaeude`, soweit vorhanden, nach `desktop/src-tauri/pakete/` (nicht im Git). `tauri.conf.json` nimmt den Ordner als Ressource auf, `main.rs` übergibt ihn dem Dienst als `--pack-dir`. Reihenfolge der Suche für `/tiles/`: Datenordner, Installer-Ressource, `web/tiles`. Erlaubt ist so nur Lesen; `/data/` kommt weiter nur aus dem Datenordner, außer `suche_geo.json`. Gesamtgröße ohne Basiskarte für Ostbelgien rund 100 MB (nur Relief und Suchindex). Ablauf: `desktop/build-sidecar.sh` → `desktop/stage-pakete.sh` → `cd desktop && npx tauri build`. Ungetestet auf Windows (Installer wurde noch nicht gebaut).
 
 ### Gebäude, Straßenschilder, Beschriftung, Verkehrsfarben
 
@@ -422,17 +351,15 @@ Abbruch ist unkritisch: `dem-hoch.pmtiles.part` wächst Teil für Teil, jeder La
 - **Detailfeld** rechts lässt sich mit dem Knopf „Details ausblenden“ einklappen; Ebenen, Höhenlegende und Detailfeld haben dasselbe Material (Deckkraft, Unschärfe, Rand, Schatten).
 - **Prüfzugang:** mit `#debug` in der Adresse reagiert die Seite auf das Ereignis `landblick-debug` (Auftrag als JSON in `data-debug-in`, Zählwerte in `data-debug-out`). Nur zum Testen, nichts geht nach außen.
 
-## Radius: 120 km, endgültig
+## Region neu bauen
 
-Das Lagebild gilt der Region, nicht dem Ort. `RADIUS_KM` in `app/config.py` steht auf 120; die Bounding Box wird daraus berechnet (`config.BBOX`, nach außen auf 0,01° gerundet), es gibt keine zweite Stelle, an der sie stehen müsste. Außerhalb blendet die Karte über die letzten 30 km in 200 Ringen in die Hintergrundfarbe aus (Vignette, `VIG_*` in `web/js/lage/geometrie.js`); das Kartenfenster (`maxBounds`) endet kurz dahinter. Größer wird es nicht.
-
-Nach einer Änderung des Radius neu bauen, in dieser Reihenfolge: `tools/build_tiles.sh`, `tools/build_dem.py`, `tools/build_gazetteer.py` (Ortsverzeichnis für das Geoparsing), `tools/build_nuts.py` (MeteoAlarm-Flächen), danach `tools/check_range.py <URL>` gegen den Server. NINA fragt 21 Kreise ab (RLP, Saarland, Euskirchen, Aachen), Tankerkönig fünf Umkreise zu je 25 km.
+Die Fläche steht in `region.yaml` und entsteht aus OpenStreetMap (`tools/fetch_osm_grenzen.py`, dann `tools/build_region.py`, siehe README). Nach einer Änderung der Fläche oder des Puffers neu bauen, in dieser Reihenfolge: `tools/build_vignette.py`, `tools/build_tank_grid.py`, `tools/kartenbasis.sh` (Basiskarte, Höhen, Gelände, Suchindex; vorher `web/tiles/*.pmtiles` löschen), `tools/build_gazetteer.py` (Ortsverzeichnis), `tools/build_nuts.py` (MeteoAlarm-Flächen), danach `tools/check_range.py <URL>` gegen den Server, wenn ausgeliefert wird.
 
 ## Suche über alle Namen
 
 Suchfeld oben links in der Karte (Taste `/` oder Strg+K). Alles läuft im Browser, keine Anfrage nach außen. Der Index wird erst beim ersten Fokus geladen.
 
-- `web/data/suche_geo.json` (statisch, ca. 6,5 MB, rund 160 000 Einträge): Orte, Straßen, Bäche, Gipfel, Wälder, Schutzgebiete aus unseren Kartenkacheln. Bauen: `python tools/build_search_index.py --rescan` (liest `web/tiles/region.pmtiles` und `core.pmtiles`, Zwischenstand in `data/search_raw.json.gz`; ohne `--rescan` wird der Zwischenstand benutzt). Nach jedem Kachel-Neubau wiederholen.
+- `web/data/suche_geo.json` (statisch, 636 KB, 16 409 Einträge, davon 11 648 Straßen): Orte, Straßen, Bäche, Gipfel, Wälder, Schutzgebiete aus unseren Kartenkacheln. Bauen: `python tools/build_search_index.py --rescan` (liest `web/tiles/region.pmtiles` und `core.pmtiles`, Zwischenstand in `data/search_raw.json.gz`; ohne `--rescan` wird der Zwischenstand benutzt). Nach jedem Kachel-Neubau wiederholen.
 - `web/data/suche.json` (dynamisch, ca. 1,3 MB): Schulen, Kirchen, Feuerwachen, Brücken, Landmarken, Haltestellen, Routen, Pegel. Entsteht bei `python -m app.export`.
 - Format `{"v":1,"t":[Typen],"o":[Orte],"e":[[Name,Typ,Breite*1e4,Länge*1e4,Ort]]}`; `TYPES` in `app/search.py` nur anhängen, nie umsortieren.
 - Datenschutz: keine Hausnummern, keine Adressen, keine Personennamen. Reine Zahlennamen werden verworfen. Lizenz: © OpenStreetMap-Mitwirkende (ODbL).
@@ -461,7 +388,7 @@ Tauri-Hülle (Rust) ──startet──▶ landblick-core (Python, Sidecar) ─�
                                   └─ Sammelzyklus alle 5 Min: app.collect → app.export → <Datenordner>/data
 ```
 
-Es gibt keine Auswahl eines Mittelpunkts: Das Gebiet steht fest in `region.yaml` (Rheinland-Pfalz plus 80 km). Beim ersten Start zeigt `einrichtung.html` nur den Fortschritt, die App lädt die Karte für die ganze Fläche (rund 1,5 GB mit Höhenmodell, einmalig, wiederaufnehmbar: Stücke in `tiles-work/chunks`, jeder Lauf macht dort weiter) und beginnt zu sammeln. Der Sidecar braucht dafür `shapely` und `pmtiles` (Python) sowie die pmtiles-CLI; ob das gebündelte Programm sie enthält, ist nicht geprüft.
+Es gibt keine Auswahl eines Mittelpunkts: Das Gebiet steht fest in `region.yaml` (Ostbelgien plus 20 km). Beim ersten Start zeigt `einrichtung.html` nur den Fortschritt, die App lädt die Karte für die ganze Fläche (rund 200 MB mit Höhenmodell, einmalig, wiederaufnehmbar: Stücke in `tiles-work/chunks`, jeder Lauf macht dort weiter) und beginnt zu sammeln. Der Sidecar braucht dafür `shapely` und `pmtiles` (Python) sowie die pmtiles-CLI; ob das gebündelte Programm sie enthält, ist nicht geprüft.
 
 Zugangsdaten in der App: Quellen, die einen Schlüssel oder ein Login brauchen, tragen im Register ein Feld `zugang` (Name der Umgebungsvariable, Art: `schluessel`, `benutzername` oder `passwort`, Bezeichnung). Die Seite „Quellen und Lizenzen“ zeigt in der Desktop-App und auf dem lokalen Webserver (`tools/serve-local.py`, nur auf Loopback) je Quelle Eingabefelder. Die Werte liegen in `zugang.json` im Datenordner (Rechte 600, Klartext, nicht im Schlüsselbund). Die Desktop-App reicht sie als Umgebungsvariable an die Sammler-Kindprozesse; beim lokalen Webserver liegt die Datei in `data/zugang.json` und `app/config.py` liest sie nach der `.env` (`.env` und Shell gehen vor). Langlaufende Prozesse (Livemodul) lesen sie erst nach einem Neustart. Angenommen werden nur Variablen, die im Register stehen. Die Oberfläche erfährt nie einen Wert, nur „gesetzt“. Neue Quelle mit Schlüssel: `zugang` im Register eintragen, der Collector liest die Variable wie bisher. Gilt ab dem nächsten Abruf der Quelle.
 

@@ -1,5 +1,5 @@
 // Geländerelief: Schummerung, Höhenfärbung, Höhenlinien mit Beschriftung, Höhenanzeige unter dem Zeiger.
-// Datenbasis: Terrarium-Höhenkacheln bis Zoom 14 (meldet meta.json hires.maxzoom, auch höher), heute Mapzen Terrain Tiles (SRTM/EU-DEM),
+// Datenbasis: Terrarium-Höhenkacheln bis Zoom 14 (meta.json → maxzoom darf weniger melden, hires.maxzoom mehr), heute Mapzen Terrain Tiles (SRTM/EU-DEM),
 // geholt mit tools/build_dem.py nach web/tiles/dem/ und vom eigenen Server
 // ausgeliefert. Den Vermerk liefert tiles/dem/meta.json. Kein Abruf bei Dritten.
 // Höhenlinien rechnet das gebündelte maplibre-contour (BSD-3) im Browser in einem Web Worker.
@@ -46,7 +46,8 @@ export async function setupRelief(map) {
     if (!probe?.ok) throw new Error('Höhenkacheln fehlen (tools/build_dem.py ausführen)');
     const meta = await fetch(abs('tiles/dem/meta.json')).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     if (typeof meta?.attribution === 'string' && meta.attribution.length < 400) RELIEF_ATTRIBUTION = meta.attribution;
-    const hz = meta?.hires?.maxzoom;
+    const hz = meta?.hires?.maxzoom, mz = meta?.maxzoom;
+    if (Number.isInteger(mz) && mz >= 8 && mz < DEM_MAXZOOM_BASE) DEM_MAXZOOM = mz;   // gröbere Ablage (build_dem.py, Ostbelgien: 12); darüber vergrößert die Karte selbst
     if (Number.isInteger(hz) && hz > DEM_MAXZOOM_BASE && hz <= 17) DEM_MAXZOOM = hz;
     const tiles = abs('tiles/dem/') + '{z}/{x}/{y}.png';
     dem = new lib.DemSource({ url: tiles, encoding: 'terrarium', maxzoom: DEM_MAXZOOM, worker: true, cacheSize: 120, timeoutMs: 15000 });

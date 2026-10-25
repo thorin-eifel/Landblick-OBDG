@@ -726,7 +726,7 @@ sources:
     intervall: 600
     ratenlimit: nicht veröffentlicht; 3 Abrufe je 10 Minuten
     auth: keine
-    geo_bezug: NUTS-2013-Gebiet (BE33 Provinz Lüttich, BE34 Luxemburg (B), LU00) als Fläche, nur Gebiete in der Region. Niederlande fehlen (Feed nutzt EMMA_ID statt NUTS)
+    geo_bezug: NUTS-2013-Gebiet (BE22 Limburg (B) wegen Voeren, BE33 Provinz Lüttich, BE34 Luxemburg (B), LU00) als Fläche, nur Gebiete in der Region. Niederlande fehlen (Feed nutzt EMMA_ID statt NUTS)
     datenschutz_risiko: niedrig
     aktiv: true
     zuletzt_geprüft: "2026-10-09"

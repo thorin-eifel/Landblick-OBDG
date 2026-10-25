@@ -3,7 +3,7 @@
 
 Zweck:     Die Suchleiste der Karte findet Orte, Straßen, Gewässer und benanntes Gelände ohne externen Geocoder. Die Namen stehen
            ohnehin in unseren eigenen Kacheln (Protomaps-Basiskarte aus OpenStreetMap); dieses Werkzeug liest sie einmal aus.
-Quelle:    web/tiles/region.pmtiles (Zoom 13, alle Kacheln im Radius), web/tiles/core.pmtiles (nur Ebene roads, Zoom 15, Kern um Irrel),
+Quelle:    web/tiles/region.pmtiles (Zoom 13, alle Kacheln im Radius), web/tiles/core.pmtiles (nur Ebene roads, Zoom 15, Kerne aus tools/tile_cores.yaml),
            Orte aus app/data/orte.json
 Lizenz:    ODbL 1.0, © OpenStreetMap-Mitwirkende (steht auch auf der Seite Quellen und Lizenzen)
 Aufruf:    python tools/build_search_index.py                  # liest die Kacheln (einige Minuten) und schreibt web/data/suche_geo.json
@@ -39,7 +39,7 @@ ZOOM = 13
 SKIP_LAYERS = {"places", "buildings", "boundaries", "landuse", "earth", "transit", "physical_line", "physical_point"}
 ROAD_KINDS = {"highway", "major_road", "medium_road", "minor_road", "other"}
 WATER_CLASS = {"river": ("Fluss", 25.0), "canal": ("Fluss", 10.0), "stream": ("Bach", 4.0), "lake": ("See", 3.0), "reservoir": ("See", 3.0), "water": ("See", 3.0), "basin": ("See", 3.0)}
-CORE_BBOX = (49.49, 5.90, 50.21, 7.02)      # lat_min, lon_min, lat_max, lon_max wie in tools/build_tiles.sh; dort liegen die Kacheln bis Zoom 15 mit Nebenstraßen
+CORE_BBOX = (50.12, 5.95, 50.76, 6.41)      # lat_min, lon_min, lat_max, lon_max: Rückfall ohne tile_cores.yaml (Kasten der DG)
 # benannte Punkte der Ebene pois -> Typ (Auswahl: öffentliche Orte und Landschaft, keine Betriebe, keine Höfe, keine Vereine)
 POI_TYPE = {"peak": "Gipfel", "volcano": "Vulkan", "forest": "Wald", "wood": "Wald", "nature_reserve": "Naturschutzgebiet", "protected_area": "Naturschutzgebiet",
             "national_park": "Naturschutzgebiet", "park": "Park", "garden": "Park", "attraction": "Sehenswürdigkeit", "castle": "Burg", "fort": "Burg",
