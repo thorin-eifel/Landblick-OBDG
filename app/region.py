@@ -100,6 +100,7 @@ class Region:
     radius_km: float | None = None # nur im Modus radius
     attribution: str = ""
     source_file: str = ""
+    cell_deg: float = 0.5          # Raster der Raumzellen im Export (app/cells.py), aus region.yaml → zellen_grad
     _index: PolygonIndex | None = field(default=None, repr=False, compare=False)
 
     def contains(self, lat: float, lon: float, margin_km: float = 0.0) -> bool:
@@ -143,12 +144,15 @@ def load(path: str | Path | None = None) -> Region:
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError(f"{cfg_path.name}: reference.lat/lon fehlt oder ist keine Zahl") from exc
     name, ref_name = str(cfg.get("name") or "Region"), str(ref.get("name") or "Bezugspunkt")
+    cell_deg = float(cfg.get("zellen_grad", 0.5))
+    if cell_deg not in (0.125, 0.25, 0.5, 1.0):
+        raise ValueError(f"{cfg_path.name}: zellen_grad muss 0.125, 0.25, 0.5 oder 1.0 sein (ganzzahlige Zellen je Grad)")
     if mode == "radius":
         km = float(cfg["radius_km"])
         if not 0 < km <= 1000:
             raise ValueError(f"{cfg_path.name}: radius_km außerhalb von 0 bis 1000")
         return Region(name, mode, ref_name, ref_lat, ref_lon, bbox_around(ref_lat, ref_lon, km),
-                      ref_lat, ref_lon, km, km, str(cfg.get("attribution") or ""), cfg_path.name)
+                      ref_lat, ref_lon, km, km, str(cfg.get("attribution") or ""), cfg_path.name, cell_deg)
     if mode == "polygon":
         poly_path = _resolve(cfg["polygon_file"])
         data = json.loads(poly_path.read_text(encoding="utf-8"))
@@ -158,7 +162,7 @@ def load(path: str | Path | None = None) -> Region:
         qlat, qlon = (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2
         far = max(haversine_km(qlat, qlon, p[1], p[0]) for poly in polygons for ring in poly for p in ring)
         return Region(name, mode, ref_name, ref_lat, ref_lon, bbox, qlat, qlon, math.ceil(far),
-                      None, str(cfg.get("attribution") or data.get("attribution") or ""), cfg_path.name, idx)
+                      None, str(cfg.get("attribution") or data.get("attribution") or ""), cfg_path.name, cell_deg, idx)
     raise ValueError(f"{cfg_path.name}: mode muss 'radius' oder 'polygon' sein, nicht {mode!r}")
 
 

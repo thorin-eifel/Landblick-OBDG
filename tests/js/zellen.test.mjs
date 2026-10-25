@@ -1,7 +1,7 @@
 // Tests für web/js/zellen.js: Zellenwahl, Laden, Verwerfen, Fehler je Zelle, Prüfsummen, Zusammenführen, Anreichern.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cellId, cellsInBounds, kindsForZoom, ZellenSpeicher, anreichern, ebenenBudget, warnbandAlsEreignisse, dichtePunkte, einheitenPunkte, kurzname } from '../../web/js/zellen.js';
+import { cellCenter, cellId, cellsInBounds, gridPerDeg, setGrid, kindsForZoom, ZellenSpeicher, anreichern, ebenenBudget, warnbandAlsEreignisse, dichtePunkte, einheitenPunkte, kurzname } from '../../web/js/zellen.js';
 
 const manifest = (files) => ({ cells: [...new Set(Object.keys(files).map((r) => r.split('/')[1]))], files: Object.fromEntries(Object.entries(files).map(([r, sha]) => [r, { sha256: sha }])) });
 const feat = (id, cell) => ({ type: 'Feature', id, geometry: { type: 'Point', coordinates: [0, 0] }, properties: { id, source_id: 'nina' } });
@@ -15,6 +15,18 @@ test('cellsInBounds liefert Ausschnitt plus Rand', () => {
   const ids = cellsInBounds({ w: 6.1, s: 49.6, e: 6.4, n: 49.9 }, 0);
   assert.deepEqual(ids.sort(), ['12_99']);
   assert.equal(cellsInBounds({ w: 6.1, s: 49.6, e: 6.4, n: 49.9 }, 1).length, 9);
+});
+
+test('Raster aus dem Manifest: 0,25 Grad (Ostbelgien), danach zurück auf 0,5', () => {
+  new ZellenSpeicher({ fetchJSON: async () => ({}) }).setManifest({ grid: { cell_deg: 0.25, per_deg: 4 }, files: {}, cells: [] });
+  assert.equal(gridPerDeg(), 4);
+  assert.equal(cellId(6.035, 50.63), '24_202');                       // Eupen
+  assert.deepEqual(cellCenter('24_202'), [6.125, 50.625]);
+  assert.deepEqual(cellsInBounds({ w: 6.0, s: 50.6, e: 6.1, n: 50.65 }, 0), ['24_202']);
+  setGrid(0); setGrid(2.5); assert.equal(gridPerDeg(), 4);              // Unsinn ändert nichts
+  new ZellenSpeicher({ fetchJSON: async () => ({}) }).setManifest({ grid: { cell_deg: 0.5 }, files: {}, cells: [] });
+  assert.equal(gridPerDeg(), 2);                                        // altes Manifest ohne per_deg
+  setGrid(2);
 });
 
 test('Ebenenbudget: unter Zoom 8 nichts, bei Ortszoom alles', () => {

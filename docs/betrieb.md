@@ -28,7 +28,7 @@ cp .env.example .env && chmod 600 .env                         # LANDBLICK_CONTA
 
 # Lokal ansehen
 python -m app.collect --once               # alle Quellen einmal
-python -m app.export                       # schreibt web/data/*.json, manifest.json, start.json und z/<x>_<y>/ (Zellen, siehe docs/obdg/plan.md (früher r4-export.md)
+python -m app.export                       # schreibt web/data/*.json, manifest.json, start.json und z/<x>_<y>/ (Zellen, siehe docs/obdg/o4-export.md)
 python tools/serve-local.py --dir web      # → http://127.0.0.1:8080 (versteht Range, http.server nicht)
 
 # Dauerbetrieb auf einem Rechner, der durchläuft
@@ -420,11 +420,13 @@ Grenzen der ersten Fassung: Suchindex, Gewässernetz, Höhenkacheln und Routen (
 
 ## Frontend: Zellenbetrieb (ab R5)
 
-Die Seite lädt `data/manifest.json` und `data/start.json` und holt danach nur die Zellen im Bildausschnitt (`data/z/<x>_<y>/<art>.json`, Raster 0,5 Grad). Fehlt das Manifest, läuft sie wie bisher aus den Flachdateien. Code: `web/js/zellen.js` (rein, getestet), `web/js/lage/zellenlauf.js` (Anbindung an Karte und Zustand).
+Die Seite lädt `data/manifest.json` und `data/start.json` und holt danach nur die Zellen im Bildausschnitt (`data/z/<x>_<y>/<art>.json`). Das Raster steht in `region.yaml` (`zellen_grad`, für Ostbelgien 0,25 Grad, 22 Zellen) und kommt über `manifest.json` (`grid.per_deg`) ins Frontend; nach einer Änderung neu exportieren, die alten Zellordner räumt der Export lokal ab. Fehlt das Manifest, läuft sie wie bisher aus den Flachdateien. Code: `web/js/zellen.js` (rein, getestet), `web/js/lage/zellenlauf.js` (Anbindung an Karte und Zustand).
 
 - **Stufen.** Unter Zoom 8 keine Zellen: die Karte zeigt je Rasterzelle eine Zahl (Dichte-Ebene aus `start.json`), das Warnband und die Tabelle stammen aus dem Warnband des Startpakets. Ab Zoom 8 Ereignisse, Pegel und Umweltstationen, ab 9 Kraftstoff, ab 10 Haltestellen, Landmarken und Routen, ab 11 Infrastruktur und Anbau (`KIND_MIN_ZOOM`). Unter Zoom 9 werden nur Meldungen ab Stufe „Hinweis“ gezeichnet, höchstens 1500 (`ebenenBudget`).
-- **Rand und Obergrenze.** Ab Zoom 9 wird eine Zelle Rand mitgeladen, höchstens 60 Zellen gleichzeitig, die Bildmitte hat Vorrang. Zellen außerhalb werden verworfen.
+- **Rand und Obergrenze.** Von Zoom 9 bis 11 wird eine Zelle Rand mitgeladen, ab Zoom 12 nicht mehr (bei 0,25 Grad deckt eine Zelle dann schon mehr als den Bildausschnitt), höchstens 60 Zellen gleichzeitig, die Bildmitte hat Vorrang. Zellen außerhalb werden verworfen.
 - **Änderungen.** Das Manifest trägt je Datei eine Prüfsumme; eine Datei wird nur neu geholt, wenn sie sich geändert hat. Ein Fehler in einer Zelle lässt die übrigen stehen, die Statuszeile neben „Lagekarte“ nennt die Zahl der nicht erreichbaren Dateien (Einzelheiten als Tooltip), nach 30 Sekunden folgt ein neuer Versuch.
+- **Linien.** Routen und Stromleitungen werden je Zelle auf deren Stück zugeschnitten (Kennung `<id>@<zelle>`), statt ganz in jede berührte Zelle zu wandern. Das halbierte die Routen in den Zellen (`docs/obdg/o4-export.md`).
+- **Größe.** Budgets: 500 KB je Zelldatei, 512 KB für das Startpaket. Überschreitungen stehen als Warnung im Manifest und im Protokoll des Exports, abgeschnitten wird nichts.
 - **Alter.** Zellen tragen keine Abrufzeit. `fetched_at`, `source_status` und `age_s` setzt das Frontend beim Zusammenführen aus dem Quellenzustand des Startpakets (`anreichern`).
 - **Gebiet.** Land und Landkreis stehen im Ereignisfilter („Filter“). Das Backend schreibt `ars` und `land` an Ereignisse und Messstellen (VG250, `app/export_cells.py`); außerhalb Deutschlands kommt `land` aus dem `region_tag` des Sammlers, ein deutsches Kürzel ohne Kreis bleibt „unbekannt“.
 - **Prüfzugang.** `#debug` kennt den Befehl `zellen` (gehaltene Dateien, Fehler, Bytes, Ereignisse) und wartet auf laufende Abrufe.

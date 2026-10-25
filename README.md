@@ -71,7 +71,7 @@ Alles läuft auf dem eigenen Rechner: Die Sammler rufen die Quellen ab und schre
 | O1 | Raumabstraktion | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
 | O2 | Kartenbasis | fertig | [#2](https://github.com/thorin-eifel/Landblick-OBDG/pull/2) |
 | O3 | Datenpipeline | wartet auf Freigabe | [#3](https://github.com/thorin-eifel/Landblick-OBDG/pull/3) |
-| O4 | Export und Auslieferung | offen |  |
+| O4 | Export und Auslieferung | wartet auf Freigabe | [#4](https://github.com/thorin-eifel/Landblick-OBDG/pull/4) |
 | O5 | Frontend | offen |  |
 | O6 | Betrieb und Härtung | offen |  |
 | O7 | Abnahme | offen |  |
@@ -82,7 +82,7 @@ Plan und Begründung: `docs/obdg/plan.md`. Entscheidung: `docs/adr/0001-region-o
 
 - Quellen im Register: 37, davon aktiv: 37
 - Sammler (Module in `app/collectors/`): 39
-- Tests: 527 Python, 147 JavaScript
+- Tests: 532 Python, 148 JavaScript
 
 ### Quellen und Lizenzen
 

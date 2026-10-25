@@ -6,7 +6,7 @@ phasen:
   - { id: O1, name: Raumabstraktion,                stand: fertig, pr: 1 }
   - { id: O2, name: Kartenbasis,                    stand: fertig, pr: 2 }
   - { id: O3, name: Datenpipeline,                  stand: wartet auf Freigabe, pr: 3 }
-  - { id: O4, name: Export und Auslieferung,        stand: offen }
+  - { id: O4, name: Export und Auslieferung,        stand: wartet auf Freigabe, pr: 4 }
   - { id: O5, name: Frontend,                       stand: offen }
   - { id: O6, name: Betrieb und Härtung,            stand: offen }
   - { id: O7, name: Abnahme,                        stand: offen }

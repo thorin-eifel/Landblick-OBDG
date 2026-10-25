@@ -1,8 +1,9 @@
 """Raumzellen für den Export: welche Zelle(n) eine Geometrie berührt.
 
-Zweck:     Das Frontend lädt nur die Zellen im Bildausschnitt nach. Dafür wird die Fläche in feste Zellen von 0,5 Grad geteilt.
-Raster:    x = floor(lon * 2), y = floor(lat * 2); Zelle "x_y" deckt lon [x/2, x/2 + 0,5) und lat [y/2, y/2 + 0,5) ab.
-           Beispiel Eupen (6,04 E, 50,63 N): x = 12, y = 101, also "12_101".
+Zweck:     Das Frontend lädt nur die Zellen im Bildausschnitt nach. Dafür wird die Fläche in feste Zellen geteilt, Kantenlänge
+           CELL_DEG aus region.yaml (zellen_grad, Standard 0,5; Ostbelgien 0,25). Das Manifest nennt das Raster dem Frontend.
+Raster:    p = 1 / CELL_DEG Zellen je Grad; x = floor(lon * p), y = floor(lat * p); Zelle "x_y" deckt lon [x/p, (x+1)/p) ab.
+           Beispiel Eupen (6,04 E, 50,63 N) bei 0,5 Grad: "12_101", bei 0,25 Grad: "24_202".
 Regeln:    Punkt: genau eine Zelle; liegt er auf einer Kante, gehört er der höheren Zelle (floor).
            Linie: jede Zelle, die von einem Abschnitt berührt wird (Kante zählt mit, also im Zweifel beide Zellen).
            Fläche: jede Zelle, die Rand oder Innenfläche der Fläche berührt (Löcher werden beachtet).
@@ -14,9 +15,14 @@ from __future__ import annotations
 import math
 from typing import Any, Iterable
 
-CELL_DEG = 0.5
+def _cell_deg() -> float:
+    from .region import REGION   # spät: cells bleibt ohne Region benutzbar (Werkzeuge, Tests mit eigenem Raster)
+    return REGION.cell_deg
+
+
+CELL_DEG = _cell_deg()
 PER_DEG = int(round(1 / CELL_DEG))
-MAX_CELLS_PER_GEOMETRY = 400        # Schutz gegen entartete Eingaben; Ostbelgien plus 20 km hat rund 8 Zellen
+MAX_CELLS_PER_GEOMETRY = 400        # Schutz gegen entartete Eingaben; Ostbelgien plus 20 km hat bei 0,25 Grad rund 22 Zellen
 
 Cell = tuple[int, int]
 
@@ -148,6 +154,34 @@ def cells_for_lines(lines: Iterable[list[list[float]]]) -> set[Cell]:
     out: set[Cell] = set()
     for line in lines:
         _line_cells(line, out)
+    return out
+
+
+CLIP_PAD_DEG = 0.002                # Rand beim Zuschnitt (rund 150 m): Nachbarzellen überlappen leicht, es bleibt keine Fuge
+
+
+def clip_lines(lines: Iterable[list[list[float]]], c: Cell, pad: float = CLIP_PAD_DEG) -> list[list[list[float]]]:
+    """Linien auf eine Zelle zuschneiden: behalten wird jede Strecke, die die Zelle (plus Rand) berührt, zusammenhängende
+    Strecken bleiben eine Linie. Geschnitten wird an Stützpunkten, nicht mitten in der Strecke; eine Strecke über die Zellkante
+    liegt deshalb in beiden Zellen. Zusammen ergeben die Stücke aller Zellen die ganze Linie, ohne sie mehrfach ganz abzulegen."""
+    w, s, e, n = cell_bbox(c)
+    r = (w - pad, s - pad, e + pad, n + pad)
+    out: list[list[list[float]]] = []
+    for line in lines:
+        run: list[list[float]] = []
+        for i in range(1, len(line)):
+            a, b = line[i - 1], line[i]
+            if _seg_hits_rect(float(a[0]), float(a[1]), float(b[0]), float(b[1]), r):
+                if not run:
+                    run.append(a)
+                run.append(b)
+            elif run:
+                out.append(run)
+                run = []
+        if run:
+            out.append(run)
+        if len(line) == 1 and r[0] <= line[0][0] <= r[2] and r[1] <= line[0][1] <= r[3]:
+            out.append(list(line))
     return out
 
 

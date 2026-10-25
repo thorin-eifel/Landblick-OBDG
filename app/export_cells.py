@@ -1,9 +1,9 @@
 """Zellenexport: teilt die Nutzdaten in Raumzellen, schreibt Startpaket und Manifest.
 
 Zweck:      Das Frontend lädt zuerst `start.json` (klein), liest daraus und aus `manifest.json`, welche Zellen es gibt,
-            und holt nur die Zellen im Bildausschnitt nach (`z/<x>_<y>/<art>.json`). Zellraster: app/cells.py (0,5 Grad).
+            und holt nur die Zellen im Bildausschnitt nach (`z/<x>_<y>/<art>.json`). Zellraster: app/cells.py (region.yaml → zellen_grad).
 Dateien:    manifest.json              Version, Zellenliste, je Datei Größe und Prüfsumme, Warnungen zu Größenbudgets
-            start.json                 Startpaket: Meta, Warnband, Quellenzustand, Zählwerte je Zelle (unter 2 MB)
+            start.json                 Startpaket: Meta, Warnband, Quellenzustand, Zählwerte je Zelle (unter 512 KB)
             z/<x>_<y>/<art>.json       Arten: events, gewaesser, umwelt, haltestellen, landmarks, infrastruktur, sakral, energie, routen, anbau, kraftstoff
 Kontrakt:   Jede Zellendatei trägt `source`/`sources` (Betreiber, Lizenz, Namensnennung), `stand` (wann sich der Inhalt zuletzt
             geändert hat) und `cell`. Zeitabhängiges (Alter, Status "veraltet", Abrufzeit je Lauf) steht NICHT in den Zellen,
@@ -12,7 +12,8 @@ Kontrakt:   Jede Zellendatei trägt `source`/`sources` (Betreiber, Lizenz, Namen
             `source_status` (web/js/rules.js).
 Stabilität: Der Inhalt wird um flüchtige Felder bereinigt und gehasht. Ändert sich der Hash nicht, bleibt die Datei Byte für Byte
             wie zuvor (auch `stand`). Zustand dafür: `<out>/.export-state.json`.
-Budgets:    Zelle je Datei 500 KB, Startpaket 2 MB. Überschreitung wird nicht abgeschnitten, sondern im Manifest und im Log gemeldet.
+Budgets:    Zelle je Datei 500 KB, Startpaket 512 KB. Überschreitung wird nicht abgeschnitten, sondern im Manifest und im Log gemeldet.
+Linien:     Routen und Leitungen über mehrere Zellen werden je Zelle zugeschnitten (cells.clip_lines), Kennung dann "<id>@<zelle>".
 """
 from __future__ import annotations
 
@@ -34,7 +35,9 @@ from .registry import Registry
 log = logging.getLogger("landblick.export.cells")
 
 CELL_BUDGET_BYTES = 500 * 1024
-START_BUDGET_BYTES = 2 * 1024 * 1024
+# Ostbelgien: Startpaket rund 41 KB (22 Zellen). Die 2 MB aus Landblick-RLP hätten ein Wachstum um das Fünfzigfache
+# durchgelassen; 512 KB meldet einen Ausreißer früh und lässt Platz für Warnlagen.
+START_BUDGET_BYTES = 512 * 1024
 MANIFEST_VERSION = 1
 STATE_NAME = ".export-state.json"
 EVENT_LIMIT = 50000
@@ -62,6 +65,11 @@ def _cells_energie(item: dict[str, Any]) -> set[cellmod.Cell]:
     """Punkte (Kraftwerk, Umspannwerk, Solarpark) nach Koordinate, Leitungen nach allen berührten Zellen."""
     return _cells_route(item) if item.get("lines") else _cells_point(item)
 
+
+# Arten mit langen Linien (Routen, Leitungen): über mehrere Zellen wird die Linie je Zelle zugeschnitten statt ganz kopiert.
+# Gemessen für Ostbelgien (25.10.2026): Routen 2,0 MB in den Zellen bei 1,0 MB als eine Datei, weil Fernwege durch bis zu
+# acht Zellen laufen; eine Zelle lag mit 628 KB über dem Budget.
+CLIP_KINDS = {"routen", "energie"}
 
 # Art -> (Schlüssel der Liste in der Nutzlast, Zellenzuordnung)
 KINDS: dict[str, tuple[str, Callable[[dict[str, Any]], set[cellmod.Cell]]]] = {
@@ -172,8 +180,15 @@ def split_payload(kind: str, payload: dict[str, Any], registry: Registry) -> dic
         if kind in GEO_KINDS:
             item = copy.deepcopy(item)
             _tag_geo(item)
+        clip = kind in CLIP_KINDS and len(cs) > 1 and isinstance(item.get("lines"), list) and item["lines"]
         for c in cs:
-            buckets.setdefault(c, []).append(_strip(item))
+            entry = _strip(item)
+            if clip:   # Linie über mehrere Zellen: je Zelle nur ihr Stück, Kennung je Zelle eindeutig (das Frontend führt nach Kennung zusammen)
+                pieces = cellmod.clip_lines(item["lines"], c)
+                if not pieces:
+                    continue
+                entry = {**entry, "lines": pieces, "id": f"{item.get('id')}@{cellmod.cell_id(c)}"}
+            buckets.setdefault(c, []).append(entry)
             if sid:
                 sources_by_cell.setdefault(c, set()).add(sid)
     out: dict[cellmod.Cell, dict[str, Any]] = {}
@@ -435,7 +450,8 @@ def build_manifest(cell_info: dict[str, Any], other: dict[str, bytes], start_raw
             warnings.append(f"{rel}: {i['bytes'] // 1024} KB über dem Budget von {budget // 1024} KB")
     return {
         "version": MANIFEST_VERSION, "generated_at": now_iso, "data_version": data_version,
-        "grid": {"cell_deg": cellmod.CELL_DEG, "x": "floor(lon*2)", "y": "floor(lat*2)", "path": "z/<x>_<y>/<art>.json"},
+        "grid": {"cell_deg": cellmod.CELL_DEG, "per_deg": cellmod.PER_DEG, "x": f"floor(lon*{cellmod.PER_DEG})",
+                 "y": f"floor(lat*{cellmod.PER_DEG})", "path": "z/<x>_<y>/<art>.json"},
         "budgets": {"cell_bytes": CELL_BUDGET_BYTES, "start_bytes": START_BUDGET_BYTES},
         "cells": sorted({i["cell"] for i in cell_info.values()}),
         "files": files, "warnings": warnings,

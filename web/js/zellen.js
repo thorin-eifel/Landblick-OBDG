@@ -3,7 +3,8 @@
 // Zweck:    Die Seite lädt nicht die ganze Region auf einmal, sondern Startpaket (start.json) + Manifest (manifest.json)
 //           und danach nur die Zellen im Ausschnitt plus Rand. Dieses Modul kennt weder DOM noch Karte; es bekommt eine
 //           Abruffunktion und liefert zusammengeführte Nutzlasten in der Form der alten Flachdateien (features, stations, stops, items).
-// Raster:   0,5 Grad, x = floor(lon*2), y = floor(lat*2); ein Punkt auf der Kante gehört zur höheren Zelle (wie app/cells.py).
+// Raster:   aus dem Manifest (grid.per_deg Zellen je Grad, Standard 2 = 0,5 Grad; Ostbelgien 4 = 0,25 Grad), x = floor(lon*p),
+//           y = floor(lat*p); ein Punkt auf der Kante gehört zur höheren Zelle (wie app/cells.py). setManifest() setzt das Raster.
 // Zustand:  je Zelle und Art 'loading' | 'ok' | 'error'. Fehler bleiben sichtbar (status()), ein Fehlschlag in einer Zelle lässt den Rest stehen.
 // Änderung: Das Manifest trägt je Datei eine Prüfsumme. Ändert sie sich, wird die gehaltene Datei beim nächsten ensure() neu geholt,
 //           sonst nicht (kein Netzverkehr bei jedem Takt).
@@ -21,12 +22,21 @@ export const KIND_MIN_ZOOM = {
   events: 8, gewaesser: 8, umwelt: 8, kraftstoff: 9, haltestellen: 10, landmarks: 10, infrastruktur: 11, routen: 10, anbau: 11, sakral: 11, energie: 9,
 };
 
-export const cellId = (lon, lat) => `${Math.floor(lon * 2)}_${Math.floor(lat * 2)}`;
+let perDeg = 2;   // Zellen je Grad; setzt das Manifest (grid.per_deg)
 
-/** Zellen, die ein Rechteck {w, s, e, n} berühren, erweitert um `margin` Zellen (Standard 1 = eine halbe Gradbreite Rand). */
+/** Raster setzen (Zellen je Grad, ganze Zahl). Unbrauchbare Werte lassen das bisherige Raster stehen. */
+export function setGrid(p) { if (Number.isInteger(p) && p >= 1 && p <= 16) perDeg = p; }
+export const gridPerDeg = () => perDeg;
+
+export const cellId = (lon, lat) => `${Math.floor(lon * perDeg)}_${Math.floor(lat * perDeg)}`;
+
+/** Mittelpunkt einer Zelle als [lon, lat]. */
+export function cellCenter(id) { const [x, y] = id.split('_').map(Number); return [(x + 0.5) / perDeg, (y + 0.5) / perDeg]; }
+
+/** Zellen, die ein Rechteck {w, s, e, n} berühren, erweitert um `margin` Zellen. */
 export function cellsInBounds(b, margin = 1) {
-  const x0 = Math.floor(b.w * 2) - margin, x1 = Math.floor(b.e * 2) + margin;
-  const y0 = Math.floor(b.s * 2) - margin, y1 = Math.floor(b.n * 2) + margin;
+  const x0 = Math.floor(b.w * perDeg) - margin, x1 = Math.floor(b.e * perDeg) + margin;
+  const y0 = Math.floor(b.s * perDeg) - margin, y1 = Math.floor(b.n * perDeg) + margin;
   const out = [];
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) out.push(`${x}_${y}`);
   return out;
@@ -56,6 +66,7 @@ export class ZellenSpeicher {
   }
 
   setManifest(m) {
+    setGrid(m?.grid?.per_deg ?? (m?.grid?.cell_deg ? Math.round(1 / m.grid.cell_deg) : 2));
     this.files = m?.files ?? {};
     this.cells = new Set(m?.cells ?? []);
   }

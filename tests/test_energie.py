@@ -125,6 +125,8 @@ def test_energie_cells_lines_span_cells_points_one(storage, registry):
     line = {"id": "way/7", "kind": "line", "kv": 380, "lines": [[[6.1, 49.8], [6.9, 49.8]]]}      # quert die 0,5-Grad-Grenze bei 6,5
     point = {"id": "node/1", "kind": "substation", "lat": 49.84, "lon": 6.45}
     cells = export_cells.split_payload("energie", {"items": [line, point], "source": None}, registry)
-    with_line = [c for c, v in cells.items() if any(i["id"] == "way/7" for i in v["items"])]
+    with_line = {c: i for c, v in cells.items() for i in v["items"] if str(i["id"]).startswith("way/7")}
     with_point = [c for c, v in cells.items() if any(i["id"] == "node/1" for i in v["items"])]
     assert len(with_line) >= 2 and len(with_point) == 1
+    # Leitung über zwei Zellen: je Zelle nur ihr Stück, Kennung je Zelle eindeutig (das Frontend führt nach Kennung zusammen)
+    assert {i["id"] for i in with_line.values()} == {f"way/7@{export_cells.cellmod.cell_id(c)}" for c in with_line}

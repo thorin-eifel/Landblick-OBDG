@@ -34,6 +34,7 @@ Stand nach O2 (`o2-kartenbasis.md`).
 
 ## Technik
 
-- **Raumzellen.** 0,5 Grad ergeben für die Region nur rund acht Zellen. Prüfen, ob 0,25 Grad besser lädt (O4).
+- **Raumzellen.** Auf 0,25 Grad umgestellt (O4, `o4-export.md`): 22 Zellen, größte Datei 247 KB, Straßenansicht Eupen 177 KB. Gemessen ohne Radrouten; mit vollständigen OSM-Quellen erneut messen.
+- **Upload.** Im Repository gibt es keinen. Soll Landblick-OBDG öffentlich ausgeliefert werden, braucht es einen, der die Hinweise im Manifest befolgt (`o4-export.md`, Abschnitt Auslieferung).
 - **Desktop-App.** Bezeichner und Paketnamen sind umgestellt, das Nachladepaket von Landblick-RLP ist abgeschaltet (O2). Ein Installer für Ostbelgien wurde noch nicht gebaut.
 - **Handbuch.** `docs/handbuch/` ist inhaltlich noch das Handbuch von Landblick-RLP mit angepasstem Titel. Kapitel 1, 4 und 9 neu schreiben.

@@ -50,7 +50,7 @@ def test_manifest_hashes_match_files_and_list_every_file(storage, registry, tmp_
         raw = (tmp_path / rel).read_bytes()
         assert info["bytes"] == len(raw) and info["sha256"] == hashlib.sha256(raw).hexdigest(), rel
     assert "start.json" in m["files"] and m["files"]["start.json"]["kind"] == "start"
-    assert m["grid"]["cell_deg"] == 0.5 and m["budgets"]["cell_bytes"] == 512000
+    assert m["grid"]["cell_deg"] == 0.5 and m["grid"]["per_deg"] == 2 and m["grid"]["x"] == "floor(lon*2)" and m["budgets"]["cell_bytes"] == 512000
     on_disk = {p.relative_to(tmp_path).as_posix() for p in tmp_path.rglob("*") if p.is_file() and not p.name.startswith(".") and p.name != "manifest.json" and not p.name.startswith("t.sqlite")}
     assert on_disk == set(m["files"])
 
