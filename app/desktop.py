@@ -71,8 +71,10 @@ def log_in_datei(data_dir: Path) -> Path | None:
 
 _RANGE = re.compile(r"^bytes=(\d*)-(\d*)$")
 CYCLE_S = 300
-# Manifest des Nachladepakets (Relief Zoom 13/14), hängt am GitHub-Release. LANDBLICK_PAKETE_MANIFEST überschreibt, "aus" schaltet ab.
-PAKETE_MANIFEST = "https://github.com/thorin-eifel/Landblick-RLP/releases/download/v1.0.0-alpha.2/dem-hoch.pmtiles.manifest.json"
+# Manifest des Nachladepakets (Relief über Zoom 12), hängt am GitHub-Release. LANDBLICK_PAKETE_MANIFEST überschreibt, "aus" schaltet ab.
+# Für Ostbelgien leer: das Relief endet bei Zoom 12 (Mapzen, rund 30 m), höhere Stufen wären nur hochgerechnet. Das Paket von
+# Landblick-RLP (dem-hoch, 4,3 GB) gilt für eine andere Fläche und darf hier nie geladen werden.
+PAKETE_MANIFEST = ""
 
 
 class Job:

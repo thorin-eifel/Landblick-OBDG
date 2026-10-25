@@ -33,16 +33,25 @@ def raw(name: str) -> bytes:
 
 # ---------------------------------------------------------------- Ortserkennung
 def test_dateline_simple_and_ambiguous():
-    p = geoparse.locate_dateline("Prüm")
-    assert p and p.name == "Prüm" and 50.1 < p.lat < 50.3 and p.confidence >= 0.85
-    h = geoparse.locate_dateline("Hausen")      # Namensvetter: unsicher markieren
+    p = geoparse.locate_dateline("Sankt Vith")
+    assert p and p.name == "Sankt Vith" and 50.2 < p.lat < 50.35 and p.confidence >= 0.85
+    h = geoparse.locate_dateline("Mont")        # vier Orte dieses Namens in der Region: unsicher markieren
     assert h and h.confidence <= 0.6
 
 
-def test_dateline_neighbour_hint_wins_over_far_namesake():
-    # "Steinebrück/Wittlich": das einzige Steinebrück im Verzeichnis liegt in Ostbelgien, 60 km von Wittlich. Dann gilt Wittlich.
-    p = geoparse.locate_dateline("Steinebrück/Wittlich")
-    assert p and p.name == "Wittlich"
+def test_dateline_neighbour_hint_picks_namesake_or_wins():
+    # "Mont/Malmedy": von vier Orten namens Mont liegt einer bei Malmedy, der gilt.
+    p = geoparse.locate_dateline("Mont/Malmedy")
+    assert p and p.name == "Mont" and abs(p.lat - 50.45) < 0.02 and abs(p.lon - 6.05) < 0.02
+    # "Steinbach/Aachen": kein Steinbach liegt bei Aachen. Dann gilt Aachen.
+    q = geoparse.locate_dateline("Steinbach/Aachen")
+    assert q and q.name == "Aachen"
+
+
+def test_dateline_german_names_of_bilingual_places():
+    for name in ("Weismes", "Kelmis", "Bleiberg", "Welkenrath"):
+        p = geoparse.locate_dateline(name)
+        assert p and p.name == name, name
 
 
 def test_dateline_unknown_and_outside():
@@ -51,9 +60,9 @@ def test_dateline_unknown_and_outside():
 
 
 def test_text_whole_words_only_and_capped_confidence():
-    assert geoparse.locate_text("Der Trierer Dom") is None       # "Trierer" ist nicht "Trier"
-    p = geoparse.locate_text("Drohung auf Schultoilette in Bitburg")
-    assert p and p.name == "Bitburg" and p.confidence <= 0.7
+    assert geoparse.locate_text("Der Eupener Stadtrat tagt") is None   # "Eupener" ist nicht "Eupen"
+    p = geoparse.locate_text("Unfall in Weismes")
+    assert p and p.name == "Weismes" and p.confidence <= 0.7
     assert geoparse.locate_text("Klopp droht ein Negativrekord") is None
 
 

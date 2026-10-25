@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Höhenmodell-Kacheln für das Relief holen (Terrarium-Kodierung) und lokal ablegen.
 
-Zweck:      Lädt die Terrarium-Höhenkacheln (Mapzen Terrain Tiles auf AWS Open Data) für die Region (region.yaml, bei LANDBLICK_REGION=region.yaml Rheinland-Pfalz plus 80 km)
-            einmalig nach web/tiles/dem-base/{z}/{x}/{y}.png (Basis und Rückfall für tools/build_dem_rlp.py, das die Landeshöhen darüberlegt und nach web/tiles/dem/ schreibt). Die Karte zeigt daraus Schummerung, Höhenfärbung
-            und Höhenlinien; beim Betrachten wird kein Drittserver angefragt.
+Zweck:      Lädt die Terrarium-Höhenkacheln (Mapzen Terrain Tiles auf AWS Open Data) für die Region (region.yaml, Ostbelgien plus 20 km)
+            einmalig nach web/tiles/dem/{z}/{x}/{y}.png und schreibt dazu README.txt und meta.json (Vermerk, Höchstzoom). Die Karte
+            zeigt daraus Schummerung, Höhenfärbung und Höhenlinien; beim Betrachten wird kein Drittserver angefragt.
+Zoom:       Standard 6 bis 12. Die Quelle ist in Europa rund 30 m fein (SRTM, EU-DEM), ein Bildpunkt bei Zoom 12 misst in Ostbelgien
+            rund 24 m. Höhere Stufen wären hochgerechnet und kosteten das Vierfache je Stufe (Zoom 14: rund 13 000 statt 945 Kacheln);
+            die Karte vergrößert über meta.json → maxzoom selbst. Ein feineres Modell (Wallonien, NRW) käme als eigene Quelle.
 Quelle:     https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png
             Datenbasis laut Mapzen/Nextzen-Dokumentation für Europa: SRTM (30 m), EU-DEM und weitere.
 Namensnennung: "Produced using Copernicus data and information funded by the European Union - EU-DEM layers." (quellen.html)
 Aufruf:     python tools/build_dem.py                 fehlende Kacheln holen (Zoom 6 bis 12)
-            python tools/build_dem.py --max-zoom 11   gröber, deutlich kleiner
+            python tools/build_dem.py --max-zoom 11   gröber, kleiner
             python tools/build_dem.py --check         nur zählen und Größe schätzen, nichts laden
 Höflichkeit: 4 gleichzeitige Abrufe, ehrlicher User-Agent, vorhandene Dateien werden übersprungen.
 Exit:       0 = alles da, 1 = Kacheln fehlen
@@ -16,6 +19,7 @@ Exit:       0 = alles da, 1 = Kacheln fehlen
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import sys
 import time
@@ -35,7 +39,7 @@ BBOX_WIDE = {"lat_min": _S - 1.0, "lat_max": _N + 1.0, "lon_min": _W - 1.5, "lon
 WIDE_MAX_ZOOM = 9
 URL = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
 UA = "Landblick/1.0 (DEM tiles, one-off fetch)"
-DEST = Path(__file__).resolve().parent.parent / "web" / "tiles" / "dem-base"
+DEST = Path(__file__).resolve().parent.parent / "web" / "tiles" / "dem"
 
 
 def tile(lat: float, lon: float, z: int) -> tuple[int, int]:
@@ -78,7 +82,7 @@ def main() -> int:
     ap.add_argument("--min-zoom", type=int, default=6)
     ap.add_argument("--max-zoom", type=int, default=12)
     ap.add_argument("--check", action="store_true")
-    ap.add_argument("--dest", type=Path, default=DEST, help="Zielordner (Standard web/tiles/dem-base)")
+    ap.add_argument("--dest", type=Path, default=DEST, help="Zielordner (Standard web/tiles/dem)")
     ap.add_argument("--budget-s", type=float, default=0, help="nach dieser Zeit aufhören (Exit 2 = Befehl wiederholen), 0 = unbegrenzt")
     args = ap.parse_args()
     dest = args.dest
@@ -101,6 +105,10 @@ def main() -> int:
         "Höhenkacheln (Terrarium-Kodierung), Quelle: Mapzen Terrain Tiles auf AWS Open Data\n"
         "https://registry.opendata.aws/terrain-tiles/  ·  Datenbasis u. a. SRTM, EU-DEM\n"
         f"Erzeugt mit tools/build_dem.py, Zoom {args.min_zoom} bis {args.max_zoom}, {size:.0f} MB.\n", encoding="utf-8")
+    (dest / "meta.json").write_text(json.dumps({
+        "maxzoom": args.max_zoom, "minzoom": args.min_zoom, "quelle": "Mapzen Terrain Tiles (AWS Open Data)",
+        "attribution": "Höhen: EU-DEM (Copernicus, EU) und SRTM (NASA) über Mapzen Terrain Tiles",
+        "erzeugt": time.strftime("%Y-%m-%d"), "tool": "tools/build_dem.py"}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"fertig: {size:.0f} MB, fehlend: {missing}")
     if args.budget_s and any(not (dest / str(z) / str(x) / f"{y}.png").exists() for z, x, y in tiles(args.min_zoom, args.max_zoom)):
         return 2

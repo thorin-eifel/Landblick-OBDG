@@ -11,15 +11,16 @@ Stand 25. Oktober 2026. Was im Gerüst noch nicht stimmt oder nicht geprüft ist
 
 ## Daten und Karte
 
-- **Karte.** Es gibt noch keine Kacheln für die Region (`web/tiles/` ist leer). Bau in O2.
-- **Höhen.** Nur Mapzen (rund 30 m). Wallonien und NRW haben feinere Modelle (Kandidaten).
+Stand nach O2 (`o2-kartenbasis.md`).
+
+- **Karte gebaut, nicht versioniert.** Basiskarte, Relief, Suchindex und Gewässernetz entstehen mit `tools/kartenbasis.sh` und liegen nicht im Repository. Für den Windows-Installer fehlt noch ein Release `kacheln-1` mit den Paketen.
+- **Höhen.** Nur Mapzen (rund 30 m), bis Zoom 12. Wallonien und NRW haben feinere Modelle (Kandidaten).
 - **Gebäude, Felswände, Hangneigung.** Die Mechanik im Frontend ist da, Daten für Ostbelgien fehlen. Ohne Kacheln zeigt die Karte die OSM-Gebäude und OSM-Klippen.
 - **Ortsteile.** Der Rechtsklick nennt Gemeinde bzw. Kreis und Land, keine Ortsteile. Belgische Teilgemeinden kämen aus Statbel oder OSM (admin_level 9).
-- **Ortsverzeichnis.** `app/data/orte.json` ist noch das Verzeichnis aus Landblick-RLP (Region Rheinland-Pfalz plus 80 km, reicht bis Lüttich und Aachen, deckt die DG also ab, ist aber zu groß). Mit `tools/build_gazetteer.py` neu bauen, sobald Overpass antwortet.
-- **MeteoAlarm-Gebiete.** `app/data/nuts_meteoalarm.json` enthält noch französische Gebiete. Mit `tools/build_nuts.py` auf BE33, BE34 und LU00 kürzen.
-- **Gewässernetz.** `tools/build_gewaessernetz.py` für Weser, Amel, Our, Warche, Rur, Göhl laufen lassen.
+- **Ortsverzeichnis.** Zuschnitt des RLP-Verzeichnisses mit deutschen Namensformen. Frisch aus Overpass nachbauen (`python tools/build_gazetteer.py`), sobald Overpass antwortet.
+- **Pegel NRW.** Das Länderportal (`lhp_hochwasser`) liefert für Rur, Inde und Vicht nichts. Hochwasser NRW direkt anbinden (O3).
 - **UV-Index.** `dwd_gesundheit` nutzt die Station Hahn (Hunsrück, gut 120 km weg). Nächste DWD-UV-Station klären oder KMI-UV nehmen.
-- **Suchindex.** `web/data/suche_geo.json` entsteht aus den Kacheln (O2).
+- **Symbole.** `tools/fetch_icons.sh` muss lokal laufen (UXWing-Lizenz verbietet Weitergabe im Repository).
 
 ## Quellen im Register, die genauer hingehören
 
@@ -31,5 +32,5 @@ Stand 25. Oktober 2026. Was im Gerüst noch nicht stimmt oder nicht geprüft ist
 ## Technik
 
 - **Raumzellen.** 0,5 Grad ergeben für die Region nur rund acht Zellen. Prüfen, ob 0,25 Grad besser lädt (O4).
-- **Desktop-App.** Bezeichner, Paketnamen und die Adresse des Kachelpakets (`PAKETE_MANIFEST` in `app/desktop.py`) zeigen noch auf Landblick-RLP. Vor dem ersten Desktop-Release umstellen.
+- **Desktop-App.** Bezeichner und Paketnamen sind umgestellt, das Nachladepaket von Landblick-RLP ist abgeschaltet (O2). Ein Installer für Ostbelgien wurde noch nicht gebaut.
 - **Handbuch.** `docs/handbuch/` ist inhaltlich noch das Handbuch von Landblick-RLP mit angepasstem Titel. Kapitel 1, 4 und 9 neu schreiben.

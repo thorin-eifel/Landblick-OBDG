@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Prüft die Kartenarchive stichprobenartig: zehn Orte in der Region, drei Zoomstufen, Kachel vorhanden, Gebäudeebene gefüllt.
+"""Prüft die Kartenarchive stichprobenartig: zwölf Orte in der Region, drei Zoomstufen, Kachel vorhanden, Gebäudeebene gefüllt.
 
-Zweck:    Nach tools/build_region_tiles.py zeigen, dass die Archive die Fläche tragen (R2-Abnahme).
+Zweck:    Nach tools/build_region_tiles.py zeigen, dass die Archive die Fläche tragen (Abnahme O2).
 Aufruf:   python tools/check_tiles.py --dir build/tiles/final
 Ausgabe:  Tabelle Ort / Zoom / Archiv / Kachel / Gebäude; Exitcode 1 bei Lücke.
 Zoom:     z8 und z13 aus region.pmtiles, z14 aus ring.pmtiles (Kerne: core.pmtiles, dort auch z15).
@@ -17,10 +17,11 @@ from pathlib import Path
 from pmtiles.reader import MmapSource, Reader
 from pmtiles.tile import zxy_to_tileid  # noqa: F401  (Reader.get nimmt z, x, y)
 
-PLACES = [("Irrel", 49.850, 6.450, True), ("Trier", 49.7596, 6.6442, True), ("Koblenz", 50.3569, 7.5890, True),
-          ("Mainz", 49.9929, 8.2473, True), ("Kaiserslautern", 49.4432, 7.7689, True), ("Saarbrücken", 49.2402, 6.9969, True),
-          ("Landau", 49.1991, 8.1170, True), ("Neuwied", 50.4286, 7.4616, True), ("Pirmasens", 49.2010, 7.6050, False),
-          ("Idar-Oberstein", 49.7130, 7.3100, False)]
+# (Ort, Breite, Länge, liegt in einem Zoom-15-Kern laut tools/tile_cores.yaml)
+PLACES = [("Eupen", 50.6295, 6.0353, True), ("Kelmis", 50.7167, 6.0000, True), ("Sankt Vith", 50.2833, 6.1269, True),
+          ("Burg-Reuland", 50.1972, 6.1389, True), ("Bütgenbach", 50.4256, 6.2050, True), ("Aachen", 50.7753, 6.0839, True),
+          ("Verviers", 50.5891, 5.8624, True), ("Malmedy", 50.4256, 6.0277, True), ("Monschau", 50.5550, 6.2400, True),
+          ("Clervaux", 50.0547, 6.0314, False), ("Vaals", 50.7706, 6.0186, True), ("Prüm", 50.2098, 6.4194, False)]
 
 
 def tile_xy(lat: float, lon: float, z: int) -> tuple[int, int]:
@@ -39,7 +40,7 @@ def layers(data: bytes) -> set[str]:
     return set(mvt.decode(raw))
 
 
-VIEWS = [("Heimat (Irrel)", 49.85, 6.45, 10), ("Land (Rheinland-Pfalz)", 49.9, 7.6, 7), ("Stadt (Mainz)", 49.9929, 8.2473, 13)]
+VIEWS = [("Region (Ostbelgien)", 50.44, 6.18, 9), ("Eupen", 50.6295, 6.0353, 12), ("Stadt (Aachen)", 50.7753, 6.0839, 13)]
 
 
 def view_tiles(lat: float, lon: float, z: int, w: int = 1920, h: int = 1080) -> list[tuple[int, int, int]]:

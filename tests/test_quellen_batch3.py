@@ -59,22 +59,18 @@ def test_brf_rejects_doctype():
 
 # ---------------------------------------------------------------- MeteoAlarm
 def test_meteoalarm_areas_file_covers_expected_regions():
-    assert {"BE22", "BE33", "BE34", "BE35", "FR211", "FR411", "FR412", "FR413", "FR414", "FR421", "LU00"} <= set(AREAS)
+    # Ostbelgien plus 20 km: Provinz Lüttich, Provinz Luxemburg, Limburg (B) wegen Voeren, Luxemburg. Frankreich liegt außerhalb.
+    assert set(AREAS) == {"BE22", "BE33", "BE34", "LU00"}
 
 
-def test_meteoalarm_france_real_fixture_yellow_only_in_radius_area():
+def test_meteoalarm_france_real_fixture_lies_outside_the_region():
     data = fixture("meteoalarm_france.json")
     ev, st = meteoalarm.parse_feed(data, "FR", datetime(2026, 9, 30, 8, 0, tzinfo=timezone.utc), AREAS)
-    assert ev and all(e.severity == "notice" and e.region_tag == "FR" and e.type == "weather" for e in ev)
-    assert all(any(n in e.title for n in ("Meuse", "Meurthe", "Moselle", "Ardennes", "Bas-Rhin", "Vosges")) for e in ev)
-    assert all(e.raw_ref is None or e.raw_ref.startswith("https://") for e in ev)
-    assert len({e.id for e in ev}) == len(ev)           # keine Sprachdopplung
-    assert st["outside"] >= 1
+    assert ev == [] and st["outside"] >= 1
 
 
 def test_meteoalarm_expired_dropped():
-    data = fixture("meteoalarm_france.json")
-    ev, st = meteoalarm.parse_feed(data, "FR", datetime(2026, 12, 1, tzinfo=timezone.utc), AREAS)
+    ev, st = meteoalarm.parse_feed({"warnings": [_synthetic_be(3)]}, "BE", datetime(2026, 12, 1, tzinfo=timezone.utc), AREAS)
     assert ev == [] and st["expired"] >= 1
 
 
