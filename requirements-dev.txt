@@ -1,0 +1,12 @@
+-r requirements.txt
+pytest==9.1.1
+pytest-asyncio==1.4.0
+# Bauwerkzeuge (tools/) und ihre Tests
+numpy==2.4.6
+pmtiles==3.8.1
+shapely==2.2.0
+PyYAML==6.0.3
+pyproj==3.7.2
+tifffile==2026.3.3
+imagecodecs==2026.3.6
+scipy==1.17.1

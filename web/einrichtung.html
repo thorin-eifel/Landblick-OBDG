@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aufbau – Landblick - OBDG</title>
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; child-src blob:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="vendor/maplibre-gl/maplibre-gl.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body class="einrichtung">
+<div id="hintergrund" aria-hidden="true"></div>
+<main id="inhalt">
+  <h1>Karte und Daten werden vorbereitet</h1>
+  <p>Beim ersten Start ruft die App alle Quellen einmal ab; erst danach hat die Karte etwas zu zeigen. Fehlt die Kartengrundlage noch, holt sie diese vorher einmalig (etwa 1,5 GB) — bringt der Installer sie schon mit, entfällt das. Das dauert je nach Leitung einige Minuten bis eine Stunde. Danach läuft alles lokal.</p>
+  <section class="card card-b">
+    <div role="progressbar" id="bar" aria-label="Fortschritt" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div id="barfill"></div></div>
+    <p id="status" role="status">Wird gestartet …</p>
+  </section>
+  <p class="muted">Quellen für Pegel, Warnungen und Verkehr gibt es nicht überall gleich dicht. Belgien, Deutschland, Luxemburg und die Niederlande veröffentlichen unterschiedlich viel; in manchen Ecken der Region bleiben Kacheln leer.</p>
+  <p id="fehler" role="alert" class="muted"></p>
+  <p class="muted klein">Hintergrundkarte: © OpenStreetMap-Mitwirkende (ODbL), Protomaps</p>
+</main>
+<script type="module" src="js/einrichtung.js"></script>
+</body>
+</html>
