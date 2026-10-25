@@ -67,8 +67,8 @@ Alles läuft auf dem eigenen Rechner: Die Sammler rufen die Quellen ab und schre
 
 | Phase | Inhalt | Stand | Pull Request |
 |---|---|---|---|
-| O0 | Gerüst aus Landblick-RLP | wartet auf Freigabe |  |
-| O1 | Raumabstraktion | wartet auf Freigabe |  |
+| O0 | Gerüst aus Landblick-RLP | wartet auf Freigabe | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
+| O1 | Raumabstraktion | wartet auf Freigabe | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
 | O2 | Kartenbasis | offen |  |
 | O3 | Datenpipeline | offen |  |
 | O4 | Export und Auslieferung | offen |  |
