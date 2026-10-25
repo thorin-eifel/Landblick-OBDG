@@ -70,7 +70,7 @@ Alles läuft auf dem eigenen Rechner: Die Sammler rufen die Quellen ab und schre
 | O0 | Gerüst aus Landblick-RLP | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
 | O1 | Raumabstraktion | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
 | O2 | Kartenbasis | fertig | [#2](https://github.com/thorin-eifel/Landblick-OBDG/pull/2) |
-| O3 | Datenpipeline | wartet auf Freigabe |  |
+| O3 | Datenpipeline | wartet auf Freigabe | [#3](https://github.com/thorin-eifel/Landblick-OBDG/pull/3) |
 | O4 | Export und Auslieferung | offen |  |
 | O5 | Frontend | offen |  |
 | O6 | Betrieb und Härtung | offen |  |
