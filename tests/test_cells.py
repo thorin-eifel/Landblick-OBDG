@@ -75,3 +75,37 @@ def test_runaway_geometry_is_refused():
     huge = {"type": "LineString", "coordinates": [[-170.0, -80.0], [170.0, 80.0]]}
     with pytest.raises(ValueError):
         cells_for_geometry(huge)
+
+
+# ---------------------------------------------------------------- Zuschnitt langer Linien (O4)
+def test_clip_lines_keeps_only_the_cell_part_and_together_covers_the_line():
+    line = [[6.05, 49.8], [6.2, 49.8], [6.45, 49.8], [6.55, 49.8], [6.8, 49.8], [6.95, 49.8]]   # quert 6,5 (Grenze bei 0,5 Grad)
+    left, right = cells.clip_lines([line], cells.cell_of(6.2, 49.8)), cells.clip_lines([line], cells.cell_of(6.8, 49.8))
+    assert left == [[[6.05, 49.8], [6.2, 49.8], [6.45, 49.8], [6.55, 49.8]]]       # die Strecke über die Kante liegt in beiden
+    assert right == [[[6.45, 49.8], [6.55, 49.8], [6.8, 49.8], [6.95, 49.8]]]
+    assert cells.clip_lines([line], cells.cell_of(6.2, 50.3)) == []                  # Zelle ohne Berührung: nichts
+
+
+def test_clip_lines_splits_a_line_that_leaves_and_returns():
+    line = [[6.1, 49.8], [6.3, 49.8], [6.7, 49.8], [6.9, 49.8], [6.7, 49.9], [6.3, 49.9], [6.1, 49.9]]
+    parts = cells.clip_lines([line], cells.cell_of(6.2, 49.8))
+    assert len(parts) == 2 and parts[0][0] == [6.1, 49.8] and parts[1][-1] == [6.1, 49.9]
+
+
+def test_cell_deg_comes_from_region_yaml(tmp_path):
+    from app import region
+    base = "mode: radius\nreference: {lat: 50.6, lon: 6.0}\nradius_km: 20\n"
+    (tmp_path / "a.yaml").write_text(base)
+    (tmp_path / "b.yaml").write_text(base + "zellen_grad: 0.25\n")
+    (tmp_path / "c.yaml").write_text(base + "zellen_grad: 0.3\n")
+    assert region.load(tmp_path / "a.yaml").cell_deg == 0.5
+    assert region.load(tmp_path / "b.yaml").cell_deg == 0.25
+    with pytest.raises(ValueError, match="zellen_grad"):
+        region.load(tmp_path / "c.yaml")
+
+
+def test_ostbelgien_uses_quarter_degree_cells():
+    from pathlib import Path
+    from app import region
+    r = region.load(Path(__file__).resolve().parent.parent / "region.yaml")
+    assert r.cell_deg == 0.25

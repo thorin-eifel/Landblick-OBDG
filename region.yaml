@@ -7,3 +7,6 @@ mode: polygon
 reference: { name: Eupen, lat: 50.6295, lon: 6.0353 }
 polygon_file: app/data/region/obdg_plus20.json
 attribution: "Grenzen: © OpenStreetMap-Mitwirkende, ODbL 1.0"
+# Raster der Raumzellen im Export. 0,25 Grad (rund 18 x 28 km): die Region hat damit 22 Zellen statt 8, und eine Ansicht
+# bei Zoom 13 lädt rund 350 KB statt 1,9 MB (Messung in docs/obdg/o4-export.md).
+zellen_grad: 0.25

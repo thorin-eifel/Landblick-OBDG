@@ -25,7 +25,7 @@ def test_control_chars_removed():
 # ------------------------------------------------------------------ registry
 def test_registry_loads_and_all_have_collector(registry):
     from app.collectors import load_collector_class
-    assert {e.id for e in registry.active()} == {"nina", "irceline", "kmi_stationen", "dwd_warnungen", "brightsky", "autobahn", "adsblol", "lbm_baustellen", "hochwasser_rlp", "bfs_odl", "uba_luft", "emsc", "dwd_radar", "dwd_icon_d2_wind", "tankerkoenig", "statec_sprit", "osm_tankstellen_lu", "dwd_stationen", "eumetsat_li", "nasa_firms", "gtfs_static", "gtfs_rt_de", "osm_natur", "osm_infra", "osm_routen", "osm_anbau", "sgdnord_energie", "osm_energie", "metno", "sensor_community", "lu_pegel", "dwd_waldbrand", "dwd_gesundheit", "wallonie_pegel", "brf", "meteoalarm", "lhp_hochwasser"}
+    assert {e.id for e in registry.active()} == {"nina", "irceline", "kmi_stationen", "dwd_warnungen", "brightsky", "autobahn", "adsblol", "lbm_baustellen", "hochwasser_rlp", "bfs_odl", "uba_luft", "emsc", "dwd_radar", "dwd_icon_d2_wind", "tankerkoenig", "statec_sprit", "osm_tankstellen_lu", "dwd_stationen", "eumetsat_li", "nasa_firms", "gtfs_static", "gtfs_rt_de", "osm_natur", "osm_infra", "osm_routen", "osm_anbau", "sgdnord_energie", "osm_energie", "metno", "sensor_community", "lu_pegel", "nrw_pegel", "dwd_waldbrand", "dwd_gesundheit", "wallonie_pegel", "brf", "meteoalarm", "lhp_hochwasser"}
     for e in registry.active():
         assert load_collector_class(e.collector)
         assert e.lizenz and e.namensnennung and e.zuletzt_geprüft

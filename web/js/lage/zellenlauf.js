@@ -5,17 +5,18 @@
 // Ablauf:  initZellen() beim Start → loadView() nach jeder Kartenbewegung (entprellt) → applyCells() setzt state.base, state.gew … und
 //          zeichnet Dichte-Ebene und Statuszeile neu. Gebietsfilter (Land, Gebiet) wirkt in applyCells().
 // Stufen:  Zoom < 7: keine Zellen, nur Dichte-Ebene (Zählwerte je Zelle) und Warnband-Punkte aus dem Startpaket.
-//          Zoom ≥ 7: Zellen im Ausschnitt plus Rand (ab Zoom 9), Arten nach Ebenenbudget (zellen.js KIND_MIN_ZOOM).
+//          Zoom ≥ 7: Zellen im Ausschnitt plus Rand (Zoom 9 bis unter 12), Arten nach Ebenenbudget (zellen.js KIND_MIN_ZOOM).
 // Fehler:  Eine Zelle, die nicht kommt, steht in der Statuszeile ("1 Zelle fehlt"); die übrigen bleiben. Nach 30 s ein neuer Versuch.
 import { energieAn } from '../energie.js';
 import { sakralAn } from '../infra.js';
 import { getJSON } from '../util.js';
 import { GEBIET_LEER, gebietPasst, gebietAktiv } from '../gebiet.js';
-import { KIND_KEY, KIND_MIN_ZOOM, ZellenSpeicher, anreichern, cellsInBounds, dichtePunkte, einheitenPunkte, kindsForZoom, warnbandAlsEreignisse } from '../zellen.js';
+import { KIND_KEY, KIND_MIN_ZOOM, ZellenSpeicher, anreichern, cellCenter, cellsInBounds, dichtePunkte, einheitenPunkte, kindsForZoom, warnbandAlsEreignisse } from '../zellen.js';
 import { map, mapReady, state } from './zustand.js';
 
 export const EVENTS_MIN_ZOOM = KIND_MIN_ZOOM.events;
 const MARGIN_ZOOM = 9;       // ab hier eine Zelle Rand rund um den Ausschnitt mitladen (darunter wäre der Rand mehr als der Ausschnitt)
+const NO_MARGIN_ZOOM = 12;   // ab hier kein Rand mehr: der Ausschnitt ist kleiner als eine Zelle, ein Rand verdreifachte die Last (Messung O4)
 const MAX_CELLS = 60;        // Obergrenze gleichzeitig gehaltener Zellen; die Mitte des Ausschnitts hat Vorrang
 const FIELD = { events: 'base', gewaesser: 'gew', umwelt: 'env', haltestellen: 'stops', landmarks: 'landmarks', infrastruktur: 'infra', routen: 'routen', sakral: 'sakral', energie: 'energie', kraftstoff: 'fuel', anbau: 'anbau' };
 
@@ -40,8 +41,8 @@ function statusMap() {
 
 function viewCells() {
   const b = map.getBounds(), z = map.getZoom(), c = map.getCenter();
-  const ids = cellsInBounds({ w: b.getWest(), s: b.getSouth(), e: b.getEast(), n: b.getNorth() }, z >= MARGIN_ZOOM ? 1 : 0);
-  const mid = (id) => { const [x, y] = id.split('_').map(Number); return (x / 2 + 0.25 - c.lng) ** 2 + (y / 2 + 0.25 - c.lat) ** 2; };
+  const ids = cellsInBounds({ w: b.getWest(), s: b.getSouth(), e: b.getEast(), n: b.getNorth() }, z >= MARGIN_ZOOM && z < NO_MARGIN_ZOOM ? 1 : 0);
+  const mid = (id) => { const [lon, lat] = cellCenter(id); return (lon - c.lng) ** 2 + (lat - c.lat) ** 2; };
   const alle = ids.filter((id) => state.zellen.has(id)).sort((a, b2) => mid(a) - mid(b2));
   gekappt = Math.max(0, alle.length - MAX_CELLS);   // Statuszeile nennt, dass der Rand des Ausschnitts fehlt
   return alle.slice(0, MAX_CELLS);

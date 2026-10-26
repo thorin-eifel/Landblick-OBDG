@@ -1,0 +1,6 @@
+station_latitude;station_longitude;station_name;station_no;catchment_no;catchment_name;LANUV_Info_1;LANUV_Info_2;LANUV_Info_3;LANUV_MNW;LANUV_MW;LANUV_MHW;station_carteasting;station_cartnorthing;CATCHMENT_SIZE;DIST_TO_CONFL
+50.7179100974879;6.65540143783795;Bessenich;2746310000100;274;Erfteinzugsgebiet;110,0;125,0;145,0;34,0;40,0;102,0;;;47,40 km²;25,00 km
+51.6722783519136;8.33254144711861;Lippstadt2;2783990000100;278;Lippeeinzugsgebiet;;;;81,0;131,0;284,0;;;1395,56 km²;168,00 km
+50.6908157844317;6.21006274570596;Mulartshuette;2824450000100;282;Rureinzugsgebiet;100,0;115,0;160,0;18,0;27,0;128,0;;;45,60 km²;15,00 km
+50.7281514418874;6.18330807681986;KornelimuensterW;2824300000100;282;Rureinzugsgebiet;150,0;170,0;210,0;6,0;21,0;145,0;;;65,02 km²;31,06 km
+50.5545462770086;6.24562071209389;Monschau;2821530000200;282;Rureinzugsgebiet;120,0;145,0;170,0;9,0;30,0;116,0;;;143,63 km²;142,07 km

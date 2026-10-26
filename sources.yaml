@@ -633,14 +633,14 @@ sources:
     intervall: 3600
     ratenlimit: nicht veröffentlicht; zwei Abrufe je Stunde
     auth: keine
-    geo_bezug: zwei Pollen-Teilregionen (deutscher Teil der Fläche); UV-Station Hahn (Hunsrück, vorläufig)
+    geo_bezug: zwei Pollen-Teilregionen (deutscher Teil der Fläche); UV-Station Bonn (nächste DWD-Station zu Eupen)
     datenschutz_risiko: niedrig
     aktiv: true
     zuletzt_geprüft: "2026-09-30"
     collector: dwd_gesundheit
     params:
       pollen_regions: [43, 101]   # Mittelgebirge NRW (Eifel, Aachen), Rheinland-Pfalz Nord (Eifelkreis); Belgien kennt der DWD nicht
-      uv_station: Hahn   # nächste UV-Station des DWD prüfen (docs/obdg/offen.md)
+      uv_station: Bonn   # nächste UV-Station des DWD zu Eupen (rund 76 km; Düsseldorf 84, Hahn 120); KMI-UV wäre näher, siehe Kandidaten
 
   - id: tankerkoenig
     name: Spritpreise (Tankerkönig, MTS-K)
@@ -671,35 +671,62 @@ sources:
     kurzname: SPW Pegel
     betreiber: Service public de Wallonie (SPW), Mobilité et Infrastructures, Direction des Voies hydrauliques, Hydrométrie
     url: https://hydrometrie.wallonie.be/services/KiWIS/KiWIS
-    lizenz: keine ausdrückliche Lizenzangabe am Dienst gefunden
-    lizenz_geprueft: false
+    lizenz: "Nutzungsbedingungen SPW Hydrométrie: Wiedergabe mit Quellenangabe frei, Weitergabe an Dritte und öffentliche Verbreitung nur mit schriftlicher Zustimmung des SPW"
+    lizenz_geprueft: true
+    nutzung: privat
     lizenz_hinweis: >-
-      Der Webdienst ist anonym abrufbar, nennt aber an der Schnittstelle keine Lizenz (2026-10-07). Die Wallonie veröffentlicht viele Datensätze
-      offen (opendata.wallonie.be), für die Echtzeit-Pegel liegt uns kein Lizenztext vor. Vor dem öffentlichen Start beim SPW nachfragen
-      oder den Datensatz im Open-Data-Portal gegenprüfen. Wasserstände sind auf den Nullpunkt der jeweiligen Station bezogen (nicht NN) und
+      Mentions légales von hydrometrie.wallonie.be (gelesen 2026-10-25): Herunterladen und Wiedergabe ohne vorherige Zustimmung erlaubt,
+      Pflichtvermerk „Sources des données : Service public de Wallonie“ (oder „SPW“), möglichst mit Link. Aber: „Sauf accord préalable et
+      écrit du SPW, il est interdit à l'utilisateur de fournir les données à un tiers sous quelque forme que ce soit – fichiers, site web,
+      webservice, etc – ou de diffuser celles-ci au public.“ Darum nutzung: privat (läuft nur mit LANDBLICK_MODE=privat, also auf dem
+      eigenen Rechner). Für eine öffentliche Karte die Zustimmung des SPW einholen, Entwurf: docs/obdg/anfrage-spw.md.
+      Wasserstände sind auf den Nullpunkt der jeweiligen Station bezogen (nicht NN) und
       deshalb nur im Verlauf je Station lesbar. Warnstufen liefert der Dienst nicht. Der Dienst antwortet auf Reihenlisten gelegentlich sehr
       langsam; die Liste wird deshalb zwischengespeichert.
-    namensnennung: "Pegeldaten Wallonien: Service public de Wallonie (SPW), Hydrométrie"
+    namensnennung: "Sources des données : Service public de Wallonie (SPW), hydrometrie.wallonie.be"
     intervall: 900
     ratenlimit: nicht genannt; wir machen alle 15 Minuten etwa 4 Abrufe, die Stationsliste (rund 40 Abrufe) nur alle 12 Stunden
     auth: keine
     geo_bezug: Stationen der Bounding Box, Feinfilter auf die Region am Rand (Maas, Ourthe, Semois, Lesse, Vesdre, Sûre-Zuflüsse, Our)
     datenschutz_risiko: niedrig
     aktiv: true
-    zuletzt_geprüft: "2026-10-07"
+    zuletzt_geprüft: "2026-10-25"
     collector: wallonie_pegel
+
+  - id: nrw_pegel
+    name: Pegel Nordrhein-Westfalen (LANUK, Hydrologische Rohdaten)
+    kurzname: Pegel NRW
+    betreiber: Landesamt für Natur, Umwelt und Klima Nordrhein-Westfalen (LANUK), Hochwasserportal NRW
+    url: https://www.opengeodata.nrw.de/produkte/umwelt_klima/wasser/oberflaechengewaesser/hygon/
+    lizenz: Datenlizenz Deutschland – Zero – Version 2.0 (dl-de/zero-2-0)
+    lizenz_geprueft: true
+    lizenz_hinweis: >-
+      Lizenz laut OpenGeodata.NRW und Datensatz „Hydrologische Rohdaten (Hochwasserportal NRW)“ auf open.nrw (gelesen 2026-10-25):
+      Nutzung ohne Einschränkungen und Bedingungen. Ungeprüfte Rohdaten, Lücken und Ausreißer möglich. Die Dateien werden einmal
+      täglich gegen 5 Uhr erneuert; die Werte sind bis zu einem Tag alt. Hochwasserklassen in Echtzeit kommen aus lhp_hochwasser.
+      Informationsstufen 1 bis 3 aus der Stationsliste des Landes.
+    namensnennung: "Pegeldaten NRW: Landesamt für Natur, Umwelt und Klima NRW (LANUK), dl-de/zero-2-0"
+    intervall: 10800
+    ratenlimit: nicht genannt; drei Dateiabrufe je Lauf (rund 1,1 MB), alle drei Stunden
+    auth: keine
+    geo_bezug: landesweite Stationsliste, Filter auf die Region (Rur, Inde, Vicht, Wurm, Urft, Olef)
+    datenschutz_risiko: niedrig
+    aktiv: true
+    zuletzt_geprüft: "2026-10-25"
+    collector: nrw_pegel
 
   - id: brf
     name: Schlagzeilen Ostbelgien (BRF, RSS)
     kurzname: BRF
     betreiber: BRF, Belgischer Rundfunk der Deutschsprachigen Gemeinschaft, Eupen
-    url: https://brf.be/feed/
+    url: https://brf.be/regional/feed/
     lizenz: keine offene Lizenz; nur Überschrift, Zeit und Link, kein Text, kein Bild
     lizenz_geprueft: false
     lizenz_hinweis: >-
       Vom Sender öffentlich angebotener RSS-Feed, robots.txt sperrt ihn nicht (nur zwei Profilseiten). Nutzungsbedingungen nicht gelesen;
-      vor dem öffentlichen Start klären oder Quelle streichen. Nur Rubrik Regional, nur mit Ort im Radius (aus Schlagzeile oder Schlagwort).
-      Eupen und Raeren liegen außerhalb der Region, deren Meldungen fallen am Rand weg.
+      vor dem öffentlichen Start klären oder Quelle streichen. Regionalfeed (brf.be/regional/feed/, zehn neueste Einträge der Rubrik
+      Regional); der Hauptfeed brachte am 25.10.2026 neun von zehn Einträgen aus Sport und Ausland. Nur mit Ort in der Region
+      (aus Schlagzeile oder Schlagwort).
     namensnennung: "Schlagzeilen: BRF (Titel und Link)"
     intervall: 900
     ratenlimit: nicht veröffentlicht; ein Abruf je 15 Minuten
@@ -707,7 +734,7 @@ sources:
     geo_bezug: Ortsname in Schlagzeile oder Schlagwort per lokalem Ortsverzeichnis (OSM), Feinfilter auf die Region am Rand
     datenschutz_risiko: niedrig
     aktiv: true
-    zuletzt_geprüft: "2026-09-30"
+    zuletzt_geprüft: "2026-10-25"
     collector: rss_brf
 
   - id: meteoalarm
@@ -804,12 +831,12 @@ sources:
     kurzname: IRCEL-CELINE
     betreiber: IRCEL - CELINE (Belgian Interregional Environment Agency), Messnetze Flandern, Wallonien, Brüssel
     url: https://geo.irceline.be/wfs
-    lizenz: CC BY 4.0 (nach Kenntnisstand)
-    lizenz_geprueft: false
+    lizenz: CC BY 4.0
+    lizenz_geprueft: true
     lizenz_hinweis: >-
-      WFS-Dienst live getestet (2026-10-07), ohne Schlüssel; Ebenen realtime:pm10_hmean_station, pm25, no2, o3 liefern Stundenwerte je Station
-      als GeoJSON. Die Lizenz CC BY 4.0 ist aus der Dokumentation der Client-Bibliothek open-irceline übernommen, nicht am Primärtext der
-      IRCEL-CELINE bestätigt. Werte sind vorläufig; -9999 bedeutet kein Wert. Im Radius liegen nur Stationen der Wallonie (Ardennen, Lüttich, Namur);
+      WFS-Dienst live getestet (2026-10-07 und 2026-10-25), ohne Schlüssel; Ebenen realtime:pm10_hmean_station, pm25, no2, o3 liefern
+      Stundenwerte je Station als GeoJSON. Lizenz am Dienst selbst bestätigt: GetCapabilities nennt AccessConstraints
+      https://creativecommons.org/licenses/by/4.0/ (gelesen 2026-10-25). Werte sind vorläufig; -9999 bedeutet kein Wert. In der Region liegen nur Stationen der Wallonie;
       einen amtlichen Index liefert dieser Dienst nicht, deshalb zeigt die Karte nur die Messwerte.
     namensnennung: "Quelle: IRCEL - CELINE (vorläufige Stundenwerte, CC BY 4.0)"
     intervall: 1800
@@ -818,7 +845,7 @@ sources:
     geo_bezug: Stationen in der Bounding-Box, Zeitfilter in der Abfrage, Feinfilter auf die Region am Rand
     datenschutz_risiko: niedrig
     aktiv: true
-    zuletzt_geprüft: "2026-10-07"
+    zuletzt_geprüft: "2026-10-25"
     collector: irceline
 
   - id: kmi_stationen
@@ -826,13 +853,13 @@ sources:
     kurzname: KMI-Stationen
     betreiber: Königliches Meteorologisches Institut von Belgien (KMI/IRM)
     url: https://opendata.meteo.be/geoserver/ows
-    lizenz: CC BY 4.0 (nach Kenntnisstand)
-    lizenz_geprueft: false
+    lizenz: CC BY 4.0
+    lizenz_geprueft: true
     lizenz_hinweis: >-
-      WFS-Dienst live getestet (2026-10-07), ohne Schlüssel, Daten rund 12 Minuten alt. Ebenen synop:synop_station und synop:synop_data
-      liefern stündliche SYNOP-Werte als GeoJSON. Das Datenportal des belgischen Klimazentrums nennt für die automatischen Stationen CC BY 4.0;
-      für diese SYNOP-Ebene ist das nicht gesondert bestätigt, am Primärtext prüfen. Im Radius liegen sieben Stationen (Elsenborn, Mont Rigi,
-      Spa, Saint-Hubert, Humain, Buzenol, Bierset); Elsenborn hat laut Dienst seit 13.08.2026 keine Werte mehr und fehlt deshalb auf der Karte. Windgeschwindigkeit wird von m/s in km/h umgerechnet, damit sie zu den DWD-Stationen passt.
+      WFS-Dienst live getestet (2026-10-07 und 2026-10-25), ohne Schlüssel, Daten rund 12 Minuten alt. Ebenen synop:synop_station und
+      synop:synop_data liefern stündliche SYNOP-Werte als GeoJSON. Lizenz laut Metadatensatz RMI_DATASET_SYNOP im belgischen Geoportal
+      (publish.geo.be, gelesen 2026-10-25): keine Zugangsbeschränkung, Creative Commons Namensnennung; die AWS-Datensätze nennen CC BY 4.0.
+      In Ostbelgien plus 20 km liegen Elsenborn, Mont Rigi und Spa; Elsenborn hat laut Dienst seit 13.08.2026 keine Werte mehr und fehlt deshalb auf der Karte. Windgeschwindigkeit wird von m/s in km/h umgerechnet, damit sie zu den DWD-Stationen passt.
     namensnennung: "Quelle: KMI/IRM, Königliches Meteorologisches Institut von Belgien (CC BY 4.0)"
     intervall: 1800
     ratenlimit: nicht veröffentlicht; zwei Abfragen je Lauf, die Stationsliste nur einmal am Tag
@@ -840,7 +867,7 @@ sources:
     geo_bezug: Stationsliste gefiltert auf die Region, eine Abfrage mit Zeitfilter für alle Stationen
     datenschutz_risiko: niedrig
     aktiv: true
-    zuletzt_geprüft: "2026-10-07"
+    zuletzt_geprüft: "2026-10-25"
     collector: kmi_stationen
 
   - id: lhp_hochwasser

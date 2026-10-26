@@ -15,6 +15,9 @@ sys.path.insert(0, str(ROOT))
 # Die Sammlertests rechnen auf einer festen Prüffläche (Kreis 120 km um Irrel, aus Landblick-RLP übernommen; sie schließt Ostbelgien ein
 # und passt zu den vorhandenen Fixtures). Die echte Fläche Ostbelgien plus 20 km prüfen test_region, test_geo und test_r3_quellen ausdrücklich.
 os.environ["LANDBLICK_REGION"] = str(ROOT / "tests" / "fixtures" / "region-irrel-120.yaml")
+# Quellen mit nutzung: privat (z. B. Pegel Wallonien) gibt es nur im Privatmodus; die Tests prüfen alle Sammler und laufen deshalb so.
+# Den Unterschied zwischen beiden Modi prüft tests/test_lu_sprit.py ausdrücklich.
+os.environ.setdefault("LANDBLICK_MODE", "privat")
 
 from app.config import Settings  # noqa: E402
 from app.db import Storage  # noqa: E402

@@ -8,7 +8,7 @@ Intervall:  3600 s (Pollen täglich gegen 11 Uhr, UV täglich gegen 7:30 Uhr)
 Beispiel:   python -m app.collect --once --only dwd_gesundheit
 
 Keine Ereignisse, nur Cache-Eintrag "gesundheit". Pollen: Teilregionen aus params.pollen_regions (Standard 101 Rhein/Mosel, 102 Mittelgebirge
-RLP). UV: Station aus params.uv_station (Standard Hahn, Hunsrück, die nächste Station im Radius). Stufen bleiben so, wie der DWD sie nennt
+RLP). UV: Station aus params.uv_station (Standard Hahn; für Ostbelgien Bonn, die nächste DWD-Station zu Eupen). Stufen bleiben so, wie der DWD sie nennt
 ("0-1", "2-3"), samt Legende. Reine Vorhersagezahlen, kein Personenbezug.
 """
 from __future__ import annotations

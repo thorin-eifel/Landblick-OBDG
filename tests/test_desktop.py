@@ -84,6 +84,18 @@ def test_use_certifi_sets_bundle_and_respects_user_value(monkeypatch):
     assert desktop.use_certifi() == "/etc/eigenes.pem"
 
 
+def test_desktop_runs_in_private_mode_unless_set(monkeypatch):
+    """Die App veröffentlicht nichts: ohne Vorgabe gilt LANDBLICK_MODE=privat, eine gesetzte Betriebsart bleibt."""
+    import importlib
+    import os
+    monkeypatch.delenv("LANDBLICK_MODE", raising=False)
+    importlib.reload(desktop)
+    assert os.environ["LANDBLICK_MODE"] == "privat"
+    monkeypatch.setenv("LANDBLICK_MODE", "oeffentlich")
+    importlib.reload(desktop)
+    assert os.environ["LANDBLICK_MODE"] == "oeffentlich"
+
+
 def test_user_agent_has_real_contact_by_default(monkeypatch):
     monkeypatch.delenv("LANDBLICK_CONTACT", raising=False)
     assert ".invalid" not in desktop.ua() and desktop.PROJECT_URL in desktop.ua()    # Nominatim: 403 bei Platzhalteradresse

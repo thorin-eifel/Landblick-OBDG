@@ -28,7 +28,7 @@ cp .env.example .env && chmod 600 .env                         # LANDBLICK_CONTA
 
 # Lokal ansehen
 python -m app.collect --once               # alle Quellen einmal
-python -m app.export                       # schreibt web/data/*.json, manifest.json, start.json und z/<x>_<y>/ (Zellen, siehe docs/obdg/plan.md (früher r4-export.md)
+python -m app.export                       # schreibt web/data/*.json, manifest.json, start.json und z/<x>_<y>/ (Zellen, siehe docs/obdg/o4-export.md)
 python tools/serve-local.py --dir web      # → http://127.0.0.1:8080 (versteht Range, http.server nicht)
 
 # Dauerbetrieb auf einem Rechner, der durchläuft
@@ -305,15 +305,18 @@ Ortszuordnung ohne externen Geocoder: `app/geoparse.py` nutzt das Ortsverzeichni
 Bewusst nicht eingebunden: Wort.lu (behält sich Text- und Data-Mining ausdrücklich vor), Bluesky (öffentliche Suche verlangt Anmeldung), Telegram (Projektanweisung), Luxemburger Luftqualität und Spritpreise je Tankstelle (kein offener Datensatz gefunden), Copernicus EMS (nur bei konkretem Einsatz). Lizenz von Presseportal, Volksfreund, DWD Pollen/UV und Mastodon ist im Register mit `lizenz_geprueft: false` vermerkt und vor dem öffentlichen Start zu klären.
 Tests: `tests/test_quellen_batch2.py`.
 
-## Ostbelgien, Wallonie, Grand Est
+## Ostbelgien und Nachbarn: Quellen nach O3
 
 | Quelle | Collector | Inhalt | Takt |
 |---|---|---|---|
-| Hub'eau Hydrométrie | `hubeau_pegel` | Wasserstände Nordlothringen (Mosel, Nied, Orne, Seille), mm zu cm, im Gewässer-Reiter; keine Warnstufen der Quelle; Lizenz nicht gegengelesen | 15 min |
-| BRF Ostbelgien | `rss_brf` | Rubrik Regional, nur mit Ort im Radius (Schlagzeile oder Schlagwort); Titel und Link | 15 min |
-| MeteoAlarm | `meteoalarm` | Wetterwarnungen BE, FR, LU als Fläche je NUTS-Gebiet (`app/data/nuts_meteoalarm.json`, gebaut mit `tools/build_nuts.py`); nur Stufe, Art, Gebiet, Zeit, Link; Auflagen der Quelle nicht gelesen | 10 min |
+| SPW Hydrométrie | `wallonie_pegel` | Wasserstände Wallonien (Weser/Vesdre, Helle, Amel, Warche, Salm, Our), Stundenmittel, cm über Pegelnull. **Nur im Privatmodus** (`LANDBLICK_MODE=privat`): die Bedingungen des SPW verbieten die öffentliche Verbreitung ohne schriftliche Zustimmung; Entwurf der Anfrage in `docs/obdg/anfrage-spw.md` | 15 min |
+| LANUK OpenHygon | `nrw_pegel` | Wasserstände NRW (Rur, Inde, Vicht, Wurm, Urft, Olef), 15-Minuten-Werte aus der Tagesdatei des Landes, bis zu einem Tag alt, mit Informationsstufen 1 bis 3; dl-de/zero-2.0 | 3 h |
+| BRF | `rss_brf` | Regionalfeed (`brf.be/regional/feed/`), nur mit Ort in der Region (Schlagzeile oder Schlagwort, deutsche Ortsnamen wie Weismes und St. Vith); Titel und Link | 15 min |
+| MeteoAlarm | `meteoalarm` | Wetterwarnungen BE und LU als Fläche je NUTS-Gebiet (BE22, BE33, BE34, LU00); nur Stufe, Art, Gebiet, Zeit, Link | 10 min |
+| KMI | `kmi_stationen` | SYNOP-Stationen Mont Rigi und Spa (Elsenborn ohne Werte); CC BY | 30 min |
+| IRCEL-CELINE | `irceline` | Luftqualität, Stationen der Wallonie; CC BY 4.0 laut Dienst | 30 min |
 
-Der Radius von 120 km reicht nach Süden bis Metz und Thionville, nach Westen bis Bastogne, Namur bleibt draußen, nach Norden bis Eupen und Aachen, nach Osten bis Koblenz und Bad Kreuznach. Noch nicht eingebunden: SPW Wallonie Hydrometrie, IRCELINE, ATMO Grand Est, IRSN Téléray, Vigicrues (Endpunkte und Lizenzen nicht geprüft). Tests: `tests/test_quellen_batch3.py`.
+Betriebsart: Die Desktop-App läuft im Privatmodus (`LANDBLICK_MODE=privat`, gesetzt in `app/desktop.py`, solange nichts anderes vorgegeben ist), weil sie nur auf 127.0.0.1 ausliefert. Sammelstelle und Export außerhalb der App laufen ohne Vorgabe öffentlich: Quellen mit `nutzung: privat` fehlen dann ganz (Sammler, Export, Quellenseite). Wer Export oder Karte ins Netz stellt, setzt `LANDBLICK_MODE=oeffentlich` ausdrücklich, auch in der App. Live-Lauf aller Quellen gegen die Fläche: `docs/obdg/o3-datenpipeline.md`.
 
 ## Kultur und Geschichte
 
@@ -417,11 +420,13 @@ Grenzen der ersten Fassung: Suchindex, Gewässernetz, Höhenkacheln und Routen (
 
 ## Frontend: Zellenbetrieb (ab R5)
 
-Die Seite lädt `data/manifest.json` und `data/start.json` und holt danach nur die Zellen im Bildausschnitt (`data/z/<x>_<y>/<art>.json`, Raster 0,5 Grad). Fehlt das Manifest, läuft sie wie bisher aus den Flachdateien. Code: `web/js/zellen.js` (rein, getestet), `web/js/lage/zellenlauf.js` (Anbindung an Karte und Zustand).
+Die Seite lädt `data/manifest.json` und `data/start.json` und holt danach nur die Zellen im Bildausschnitt (`data/z/<x>_<y>/<art>.json`). Das Raster steht in `region.yaml` (`zellen_grad`, für Ostbelgien 0,25 Grad, 22 Zellen) und kommt über `manifest.json` (`grid.per_deg`) ins Frontend; nach einer Änderung neu exportieren, die alten Zellordner räumt der Export lokal ab. Fehlt das Manifest, läuft sie wie bisher aus den Flachdateien. Code: `web/js/zellen.js` (rein, getestet), `web/js/lage/zellenlauf.js` (Anbindung an Karte und Zustand).
 
 - **Stufen.** Unter Zoom 8 keine Zellen: die Karte zeigt je Rasterzelle eine Zahl (Dichte-Ebene aus `start.json`), das Warnband und die Tabelle stammen aus dem Warnband des Startpakets. Ab Zoom 8 Ereignisse, Pegel und Umweltstationen, ab 9 Kraftstoff, ab 10 Haltestellen, Landmarken und Routen, ab 11 Infrastruktur und Anbau (`KIND_MIN_ZOOM`). Unter Zoom 9 werden nur Meldungen ab Stufe „Hinweis“ gezeichnet, höchstens 1500 (`ebenenBudget`).
-- **Rand und Obergrenze.** Ab Zoom 9 wird eine Zelle Rand mitgeladen, höchstens 60 Zellen gleichzeitig, die Bildmitte hat Vorrang. Zellen außerhalb werden verworfen.
+- **Rand und Obergrenze.** Von Zoom 9 bis 11 wird eine Zelle Rand mitgeladen, ab Zoom 12 nicht mehr (bei 0,25 Grad deckt eine Zelle dann schon mehr als den Bildausschnitt), höchstens 60 Zellen gleichzeitig, die Bildmitte hat Vorrang. Zellen außerhalb werden verworfen.
 - **Änderungen.** Das Manifest trägt je Datei eine Prüfsumme; eine Datei wird nur neu geholt, wenn sie sich geändert hat. Ein Fehler in einer Zelle lässt die übrigen stehen, die Statuszeile neben „Lagekarte“ nennt die Zahl der nicht erreichbaren Dateien (Einzelheiten als Tooltip), nach 30 Sekunden folgt ein neuer Versuch.
+- **Linien.** Routen und Stromleitungen werden je Zelle auf deren Stück zugeschnitten (Kennung `<id>@<zelle>`), statt ganz in jede berührte Zelle zu wandern. Das halbierte die Routen in den Zellen (`docs/obdg/o4-export.md`).
+- **Größe.** Budgets: 500 KB je Zelldatei, 512 KB für das Startpaket. Überschreitungen stehen als Warnung im Manifest und im Protokoll des Exports, abgeschnitten wird nichts.
 - **Alter.** Zellen tragen keine Abrufzeit. `fetched_at`, `source_status` und `age_s` setzt das Frontend beim Zusammenführen aus dem Quellenzustand des Startpakets (`anreichern`).
 - **Gebiet.** Land und Landkreis stehen im Ereignisfilter („Filter“). Das Backend schreibt `ars` und `land` an Ereignisse und Messstellen (VG250, `app/export_cells.py`); außerhalb Deutschlands kommt `land` aus dem `region_tag` des Sammlers, ein deutsches Kürzel ohne Kreis bleibt „unbekannt“.
 - **Prüfzugang.** `#debug` kennt den Befehl `zellen` (gehaltene Dateien, Fehler, Bytes, Ereignisse) und wartet auf laufende Abrufe.

@@ -33,7 +33,8 @@ QUERY = ('[out:json][timeout:80];node["place"~"^(city|town|village|hamlet|suburb
          "out tags center;")
 # Deutsche Formen zweisprachiger Orte in und um Ostbelgien (OSM: name:de). Nur Orte, deren `name` französisch ist.
 ALIASE = {"Waimes": "Weismes", "Plombières": "Bleiberg", "Welkenraedt": "Welkenrath", "Stavelot": "Stablo",
-          "Troisvierges": "Ulflingen", "Clervaux": "Clerf", "Wincrange": "Wintger"}
+          "Troisvierges": "Ulflingen", "Clervaux": "Clerf", "Wincrange": "Wintger",
+          "Sankt Vith": "St. Vith"}   # Schreibweise des BRF
 
 
 def namen(name: str, name_de: str = "") -> list[str]:

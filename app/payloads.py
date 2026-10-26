@@ -141,11 +141,11 @@ def trend(series: list[dict[str, Any]], hours: int) -> float | None:
     return round(series[-1]["value"] - older[-1]["value"], 1) if older else None
 
 
-GEW_SOURCES = (("wallonie_pegel", "W"), ("lu_pegel", "W"), ("hochwasser_rlp", "W"))
+GEW_SOURCES = (("wallonie_pegel", "W"), ("nrw_pegel", "W"), ("lu_pegel", "W"), ("hochwasser_rlp", "W"))
 
 
 def gewaesser_payload(storage: Storage, registry: Registry, series_step: int = 1) -> dict[str, Any]:
-    """Pegel aus Wallonien (SPW), Luxemburg (AGE) und Rheinland-Pfalz (Prüm, Our) in einer Liste.
+    """Pegel aus Wallonien (SPW), Nordrhein-Westfalen (LANUK), Luxemburg (AGE) und Rheinland-Pfalz (Prüm, Our) in einer Liste.
 
     series_step > 1 dünnt die Zeitreihe aus (jeder n-te Punkt plus der letzte) — hält die Datei klein.
     Jede Station trägt ihre Quelle (source_id, source_name, attribution), damit Popup und Tabelle richtig zitieren."""
