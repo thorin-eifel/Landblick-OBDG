@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Eigene Zeichnung von Landblick-OBDG (15 x 15 wie Maki), frei weitergebbar wie der Code des Projekts. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15">
+  <path d="M7.5 1L2 5.8V9h11V5.8z"/><path d="M.7 11q1.7-1.4 3.4 0t3.4 0 3.4 0 3.4 0M.7 13.8q1.7-1.4 3.4 0t3.4 0 3.4 0 3.4 0" stroke="#000" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+</svg>

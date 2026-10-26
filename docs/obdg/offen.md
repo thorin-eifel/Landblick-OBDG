@@ -23,7 +23,6 @@ Stand nach O2 (`o2-kartenbasis.md`).
 - **UV-Index.** DWD-Station Bonn (rund 76 km von Eupen). KMI-UV wäre näher, Lizenz prüfen.
 - **Belgien ohne Verkehr und Warnungen.** Keine offene Quelle für Verkehr (Wallonien) und keine für Bevölkerungswarnungen (BE-Alert). Belgische Fahrpläne (TEC, SNCB) hängen an Nutzungsbedingungen, siehe `quellen-kandidaten.md`.
 - **OSM-Quellen nicht live geprüft.** Overpass war in O2 und O3 durchgehend überlastet.
-- **Symbole.** `tools/fetch_icons.sh` muss lokal laufen (UXWing-Lizenz verbietet Weitergabe im Repository).
 
 ## Quellen im Register, die genauer hingehören
 
