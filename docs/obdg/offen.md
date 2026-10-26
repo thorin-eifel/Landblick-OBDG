@@ -14,7 +14,7 @@ Stand 25. Oktober 2026. Was im Gerüst noch nicht stimmt oder nicht geprüft ist
 
 Stand nach O2 (`o2-kartenbasis.md`).
 
-- **Karte gebaut, nicht versioniert.** Basiskarte, Relief, Suchindex und Gewässernetz entstehen mit `tools/kartenbasis.sh` und liegen nicht im Repository. Für den Windows-Installer fehlt noch ein Release `kacheln-1` mit den Paketen.
+- **Karte gebaut, nicht versioniert.** Basiskarte, Relief, Suchindex und Gewässernetz entstehen mit `tools/kartenbasis.sh` und liegen nicht im Repository. Für den Windows-Installer fehlt noch das Release `kacheln-1`. Aus einer Cloud-Sitzung darf Claude keine Releases anlegen; der Workflow **kacheln-release** baut und veröffentlicht es auf Knopfdruck (Actions → kacheln-release → Run workflow).
 - **Höhen.** Nur Mapzen (rund 30 m), bis Zoom 12. Wallonien und NRW haben feinere Modelle (Kandidaten).
 - **Gebäude, Felswände, Hangneigung.** Die Mechanik im Frontend ist da, Daten für Ostbelgien fehlen. Ohne Kacheln zeigt die Karte die OSM-Gebäude und OSM-Klippen.
 - **Ortsteile.** Der Rechtsklick nennt Gemeinde bzw. Kreis und Land, keine Ortsteile. Belgische Teilgemeinden kämen aus Statbel oder OSM (admin_level 9).

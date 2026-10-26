@@ -23,3 +23,4 @@ _to_delete/
 landblick_sync_*.tgz
 desktop/src-tauri/pakete/
 web/tiles/README.txt
+dist/

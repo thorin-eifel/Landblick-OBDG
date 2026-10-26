@@ -72,7 +72,7 @@ Alles läuft auf dem eigenen Rechner: Die Sammler rufen die Quellen ab und schre
 | O2 | Kartenbasis | fertig | [#2](https://github.com/thorin-eifel/Landblick-OBDG/pull/2) |
 | O3 | Datenpipeline | fertig | [#3](https://github.com/thorin-eifel/Landblick-OBDG/pull/3) |
 | O4 | Export und Auslieferung | fertig | [#4](https://github.com/thorin-eifel/Landblick-OBDG/pull/4) |
-| O5 | Frontend | wartet auf Freigabe | [#5](https://github.com/thorin-eifel/Landblick-OBDG/pull/5) |
+| O5 | Frontend | fertig | [#5](https://github.com/thorin-eifel/Landblick-OBDG/pull/5) |
 | O6 | Betrieb und Härtung | offen |  |
 | O7 | Abnahme | offen |  |
 
