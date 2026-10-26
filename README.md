@@ -33,7 +33,7 @@ python tools/fetch_osm_grenzen.py --out-dir build/osm-grenzen --contact betreibe
 python tools/build_region.py --raw build/osm-grenzen --buffer-km 20
 ```
 
-Der erste Schritt fragt Nominatim in einem 3-km-Raster ab (rund 750 Punkte, eine Anfrage je Sekunde, gut eine Viertelstunde) und löst belgische Teilgemeinden zu ihren Gemeinden auf. Der zweite puffert die Grenze der DG, schneidet die Gebiete zu und schreibt Region, Gebietsliste, Kartengrenze und den Umriss für die Ortsnamen. Gliederung: Gemeinden in Belgien, Luxemburg und den Niederlanden, Kreise in Deutschland. Begründung in `docs/adr/0001-region-obdg.md`.
+Der erste Schritt fragt Nominatim in einem 3-km-Raster ab (rund 750 Punkte, eine Anfrage je Sekunde, gut eine Viertelstunde) und löst belgische Teilgemeinden zu ihren Gemeinden auf. Der zweite puffert die Grenze der DG, schneidet die Gebiete zu und schreibt Region, Gebietsliste, Kartengrenze und den Umriss für die Ortsnamen. Gliederung: Gemeinden in Belgien, Luxemburg und den Niederlanden, Kreise in Deutschland, je mit der zweiten Sprachform aus OSM (Waimes/Weismes, Amel/Amblève). Ein älterer Abruf ohne diese Namen lässt sich mit `--nur-namen` ergänzen, ohne das Raster zu wiederholen. Begründung in `docs/adr/0001-region-obdg.md`.
 
 ## So hängt es zusammen
 
@@ -70,9 +70,9 @@ Alles läuft auf dem eigenen Rechner: Die Sammler rufen die Quellen ab und schre
 | O0 | Gerüst aus Landblick-RLP | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
 | O1 | Raumabstraktion | fertig | [#1](https://github.com/thorin-eifel/Landblick-OBDG/pull/1) |
 | O2 | Kartenbasis | fertig | [#2](https://github.com/thorin-eifel/Landblick-OBDG/pull/2) |
-| O3 | Datenpipeline | wartet auf Freigabe | [#3](https://github.com/thorin-eifel/Landblick-OBDG/pull/3) |
-| O4 | Export und Auslieferung | wartet auf Freigabe | [#4](https://github.com/thorin-eifel/Landblick-OBDG/pull/4) |
-| O5 | Frontend | offen |  |
+| O3 | Datenpipeline | fertig | [#3](https://github.com/thorin-eifel/Landblick-OBDG/pull/3) |
+| O4 | Export und Auslieferung | fertig | [#4](https://github.com/thorin-eifel/Landblick-OBDG/pull/4) |
+| O5 | Frontend | wartet auf Freigabe | [#5](https://github.com/thorin-eifel/Landblick-OBDG/pull/5) |
 | O6 | Betrieb und Härtung | offen |  |
 | O7 | Abnahme | offen |  |
 
@@ -82,7 +82,7 @@ Plan und Begründung: `docs/obdg/plan.md`. Entscheidung: `docs/adr/0001-region-o
 
 - Quellen im Register: 37, davon aktiv: 37
 - Sammler (Module in `app/collectors/`): 39
-- Tests: 532 Python, 148 JavaScript
+- Tests: 537 Python, 156 JavaScript
 
 ### Quellen und Lizenzen
 

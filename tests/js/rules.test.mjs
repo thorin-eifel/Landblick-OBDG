@@ -127,3 +127,11 @@ test('deriveStatus und exportStale: fehlende oder unlesbare Angaben täuschen ke
   assert.equal(exportStale('kein Datum', now), true);
   assert.equal(deriveStatus({ status: 'ok', last_success: '2026-10-15T11:59:00Z', consecutive_failures: 0 }, now).status, 'ok');
 });
+
+test('laeufeText: Zahl der Läufe und Fehler zum Vorlesen', async () => {
+  const { laeufeText } = await import('../../web/js/rules.js');
+  assert.equal(laeufeText([]), 'noch kein Lauf');
+  assert.equal(laeufeText(undefined), 'noch kein Lauf');
+  assert.equal(laeufeText([{ ok: true }]), 'letzter Lauf: 1 erfolgreich, 0 mit Fehler');
+  assert.equal(laeufeText([{ ok: true }, { ok: false }, { ok: true }]), 'letzte 3 Läufe: 2 erfolgreich, 1 mit Fehler');
+});

@@ -309,8 +309,10 @@ def build_start(storage: Storage, registry: Registry, cell_info: dict[str, Any],
 
 
 def kreise_table() -> list[dict[str, str]]:
-    """Alle Gebiete (Schlüssel, Name, Land) für das Filtermenü; ändert sich nur mit der Gliederungsdatei."""
-    return sorted(({"ars": k["ars"], "name": k["name"], "land": k["land"]} for k, _ in _gl()._items), key=lambda r: (r["land"], r["name"]))
+    """Alle Gebiete (Schlüssel, Name, Land, dazu name_de bzw. name_fr, wo es sie gibt) für das Filtermenü; ändert sich nur mit
+    der Gliederungsdatei."""
+    return sorted(({key: k[key] for key in ("ars", "name", "name_de", "name_fr", "land") if k.get(key)} for k, _ in _gl()._items),
+                  key=lambda r: (r["land"], r["name"]))
 
 
 # --- Verwaltungseinheiten für die Übersichtskarte -------------------------------------------------------------------------------

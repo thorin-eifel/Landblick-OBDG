@@ -19,8 +19,10 @@ Parameter:  --relation   OSM-Relation der Kernfläche
             --buffer-km  Puffer, für den die Gebiete gesammelt werden (Standard 20, mit 3 km Zuschlag)
             --step-km    Rasterweite
             --extra      zusätzliche Relationen, z. B. --extra 2425330 2425331
-            --contact    Kontakt für den User-Agent (Pflicht laut Nominatim-Regeln), sonst LANDBLICK_CONTACT
+            --contact    Kennung für den User-Agent (Pflicht laut Nominatim-Regeln): Mailadresse oder Projektadresse
+                         (https://…), sonst LANDBLICK_CONTACT
             --nur-aufloesen  kein Raster, nur den zweiten Schritt auf ein vorhandenes gebiete.geojson anwenden
+            --nur-namen  kein Raster, nur die Namen in allen Sprachen (namedetails) an ein vorhandenes gebiete.geojson hängen
 Beispiel:   python tools/fetch_osm_grenzen.py --out-dir build/osm-grenzen --contact betreiber@example.org
 Abhängig:   requirements-tools.txt (httpx, shapely, pyproj)
 """
@@ -82,7 +84,7 @@ def lookup(nom: Nominatim, relations: list[int]) -> list[dict]:
     for i in range(0, len(relations), 20):
         chunk = relations[i:i + 20]
         data = nom.get("lookup", {"osm_ids": ",".join(f"R{r}" for r in chunk), "format": "geojson",
-                                  "polygon_geojson": 1, "addressdetails": 1, "extratags": 1})
+                                  "polygon_geojson": 1, "addressdetails": 1, "extratags": 1, "namedetails": 1})
         feats.extend(data.get("features", []))
     return feats
 
@@ -125,6 +127,19 @@ def aufloesen(nom: Nominatim, feats: list[dict]) -> list[dict]:
     return list(keep.values()) + lookup(nom, neu)
 
 
+def namen_nachtragen(nom: Nominatim, feats: list[dict]) -> None:
+    """Hängt namedetails (name, name:de, name:fr, …) an Features eines älteren Abrufs, der sie noch nicht hatte."""
+    ids = [int(f["properties"]["osm_id"]) for f in feats]
+    namen: dict[int, dict] = {}
+    for i in range(0, len(ids), 20):
+        data = nom.get("lookup", {"osm_ids": ",".join(f"R{r}" for r in ids[i:i + 20]), "format": "json", "namedetails": 1})
+        for hit in data if isinstance(data, list) else []:
+            namen[int(hit["osm_id"])] = hit.get("namedetails") or {}
+    for f in feats:
+        f["properties"]["namedetails"] = namen.get(int(f["properties"]["osm_id"]), {})
+    log.info("Namen für %d von %d Gebieten nachgetragen", len(namen), len(feats))
+
+
 def _write_gebiete(out_dir: Path, feats: list[dict]) -> None:
     keep = [f for f in feats if f.get("geometry", {}).get("type") in ("Polygon", "MultiPolygon")]
     log.info("%d Gebiete mit Umriss (%d ohne Fläche verworfen)", len(keep), len(feats) - len(keep))
@@ -141,14 +156,21 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--contact", default=os.environ.get("LANDBLICK_CONTACT", ""))
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--nur-aufloesen", action="store_true")
+    ap.add_argument("--nur-namen", action="store_true")
     args = ap.parse_args(argv)
     logging.basicConfig(level="INFO", format="%(asctime)s %(levelname)s %(message)s")
-    if "@" not in args.contact:
-        log.error("--contact (oder LANDBLICK_CONTACT) muss eine Mailadresse sein, Nominatim verlangt das")
+    if "@" not in args.contact and not args.contact.startswith("https://"):
+        log.error("--contact (oder LANDBLICK_CONTACT) muss eine Mailadresse oder eine Projektadresse (https://…) sein, Nominatim verlangt eine Kennung")
         return 2
 
     nom = Nominatim(args.contact)
     args.out_dir.mkdir(parents=True, exist_ok=True)
+    if args.nur_namen:
+        path = args.out_dir / "gebiete.geojson"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        namen_nachtragen(nom, data["features"])
+        path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        return 0
     if args.nur_aufloesen:
         feats = json.loads((args.out_dir / "gebiete.geojson").read_text(encoding="utf-8"))["features"]
         _write_gebiete(args.out_dir, aufloesen(nom, feats))

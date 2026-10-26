@@ -11,7 +11,8 @@
 // Reduzierte Bewegung (prefers-reduced-motion): nichts wandert, Pfeile und stehende Zeichen bleiben.
 // Aufruf:   const flow = createFlow(map, { sampleWind, reduce, onWind }); flow.layers({ dark, med }) → Layer-Liste; flow.setEnabled(true); flow.update()
 
-export const IMPOUNDED = ['Mosel', 'Saar'];
+// Maas/Meuse: in der Region nur bei Visé, gestaut durch die Staustufe Lixhe. Mosel und Saar bleiben für Ansichten außerhalb stehen.
+export const IMPOUNDED = ['Maas', 'Meuse', 'Mosel', 'Saar'];
 const LINE_KINDS = ['river', 'stream', 'canal'];
 const FLOWING_DETAIL = ['river', 'stream', 'canal'];
 const STILL_KINDS = ['water', 'lake', 'basin', 'reservoir'];
@@ -22,9 +23,9 @@ const MAXF = 15;                  // Zahl der Wellen-Ebenen: jede trägt ein fes
 const WAVE_ON = ['interpolate', ['linear'], ['zoom'], WAVE_MIN_ZOOM, 0, WAVE_MIN_ZOOM + 2, 0.95];
 const LINE_MIN_ZOOM = { stream: 11, river: 9 };
 const LINE_STEP_MS = { stream: 55, river: 95 };   // Takt der 14 Striche-Schritte: kleiner = schneller
-// Breite Flüsse (Mosel, Saar, Sauer/Sûre): Wellenfeld über die ganze Breite statt eines Strichs. Breite in Metern, grob und absichtlich etwas
+// Breite Flüsse (Maas/Meuse bei Visé; Mosel, Saar, Sauer/Sûre außerhalb der Region): Wellenfeld über die ganze Breite statt eines Strichs. Breite in Metern, grob und absichtlich etwas
 // schmaler als der Fluss, damit das Muster nicht über die Ufer ragt. Die Zeile zeigt die Form wie bei Seen, nur in Fließrichtung bewegt.
-export const WIDE_RIVERS = { Mosel: 100, Saar: 60, Sauer: 40, 'Sûre': 40 };
+export const WIDE_RIVERS = { Maas: 100, Meuse: 100, Mosel: 100, Saar: 60, Sauer: 40, 'Sûre': 40 };
 const RIP_FRAMES = 6, RIP_MS = { wide: 110, stau: 650 };
 
 // Strichfolge (Einheiten der Linienbreite): die Striche rücken mit jedem Schritt ein Stück in Richtung der Linie

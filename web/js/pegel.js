@@ -1,25 +1,27 @@
 /* Pegelliste: Gewässernamen vereinheitlichen und sortieren (reine Funktionen, ohne DOM).
  *
  * Reihenfolge: Gewässer alphabetisch (deutsche Sortierung), innerhalb eines Gewässers die Stationen alphabetisch.
- * Stationen ohne Gewässername kommen ans Ende. Dasselbe Gewässer aus mehreren Quellen (Mosel aus PEGELONLINE, Luxemburg
- * und Hub'eau) steht in einem Block; dafür werden die französischen Namen auf die deutschen gelegt.
+ * Stationen ohne Gewässername kommen ans Ende. Dasselbe Gewässer aus mehreren Quellen steht in einem Block; dafür werden die
+ * französischen Namen auf die deutschen gelegt. Flüsse, die durch die DG laufen, tragen dort ihren deutschen Namen; die
+ * französische Form, unter der der SPW sie führt, steht in Klammern dahinter (Weser (Vesdre)).
  */
-const FR_TO_DE = { moselle: 'Mosel', sarre: 'Saar', meuse: 'Maas', sure: 'Sauer', 'sûre': 'Sauer', chiers: 'Chiers' };
+const FR_TO_DE = { moselle: 'Mosel', sarre: 'Saar', meuse: 'Maas', 'basse meuse': 'Maas', sure: 'Sauer', 'sûre': 'Sauer', chiers: 'Chiers',
+  vesdre: 'Weser (Vesdre)', 'amblève': 'Amel (Amblève)', ambleve: 'Amel (Amblève)', gueule: 'Göhl (Gueule)' };
 const collator = new Intl.Collator('de', { sensitivity: 'base', numeric: true });
 
-/** "La Moselle" → "Mosel", "Ruisseau de Vaux" → "Vaux", "L'Orne" → "Orne", null → null. */
+/** "La Moselle" → "Mosel", "Vesdre" → "Weser (Vesdre)", "Ruisseau de Vaux" → "Vaux", "Die Braunlauf" → "Braunlauf", null → null. */
 export function waterName(raw) {
   if (raw == null) return null;
   let s = String(raw).trim().replace(/\s+/g, ' ');
   if (!s) return null;
   s = s.replace(/^ruisseau\s+(?:de\s+la\s+|de\s+l['’]\s*|du\s+|des\s+|de\s+|le\s+|la\s+|l['’]\s*)?/i, '');
-  s = s.replace(/^(?:la|le|les)\s+/i, '').replace(/^l['’]\s*/i, '');
+  s = s.replace(/^(?:la|le|les|die|der|das)\s+/i, '').replace(/^l['’]\s*/i, '');
   if (!s) return null;
   const hit = FR_TO_DE[s.toLowerCase()];
   return hit ?? s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-// Echte Gewässer zuerst, dann Sammelgruppen ohne Flussnamen (etwa das Feld "Kommunale Messstelle" der Pegel in Rheinland-Pfalz), dann ohne Angabe.
+// Echte Gewässer zuerst, dann Sammelgruppen ohne Flussnamen (etwa das Feld "Kommunale Messstelle" der Pegel aus Rheinland-Pfalz im Eifelkreis), dann ohne Angabe.
 const groupRank = (label) => (label == null ? 2 : /^kommunale messstelle/i.test(label) ? 1 : 0);
 
 /** Sortiert eine Kopie der Stationsliste. Jede Station bekommt `water_label` (vereinheitlicht). */

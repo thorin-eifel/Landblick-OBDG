@@ -53,3 +53,10 @@ test('echte Datei (wenn gebaut): Eupen liegt in Eupen, DG', { skip: !existsSync(
   assert.equal(findeGebiet(d, 6.0839, 50.7753).land, 'Nordrhein-Westfalen');   // Aachen
   assert.equal(findeGebiet(d, 6.1389, 50.1972).gebiet, 'Burg-Reuland');
 });
+
+test('echte Datei (wenn gebaut): zweite Sprachform hinter dem amtlichen Namen', { skip: !existsSync(new URL('../../web/geo/gebiete.geojson', import.meta.url)) }, () => {
+  const d = JSON.parse(readFileSync(new URL('../../web/geo/gebiete.geojson', import.meta.url)));
+  assert.equal(findeGebiet(d, 6.1105, 50.4148).gebiet, 'Waimes (dt. Weismes)');
+  assert.equal(findeGebiet(d, 6.0976, 50.3533).gebiet, 'Amel (frz. Amblève)');
+  assert.equal(findeGebiet(d, 6.0287, 50.4255).gebiet, 'Malmedy');   // keine abweichende Form in OSM
+});

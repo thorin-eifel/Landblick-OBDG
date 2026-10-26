@@ -95,7 +95,7 @@ Einige Ebenen verdienen ein Wort.
 
 ## 3.5 Seitenleiste: Ereignisse, Gewässer, Umwelt, Wetter, Grenzpendler
 
-- **Ereignisse**: die Meldungen als Liste, nach Schwere sortiert. Ein Klick auf eine Zeile zentriert die Karte. Der Filter wählt *Land* und *Landkreis*; er wirkt auf Liste und Karte. Meldungen von außerhalb Deutschlands tragen das Land aus der Quelle (LU, BE, FR); ein deutsches Kürzel ohne Kreis erscheint als „unbekannt“ und fällt bei gesetztem Filter heraus.
+- **Ereignisse**: die Meldungen als Liste, nach Schwere sortiert. Ein Klick auf eine Zeile zentriert die Karte. Der Filter wählt *Land* und *Gemeinde/Kreis* (Gemeinden in Belgien, Luxemburg und den Niederlanden, Kreise in Deutschland); er wirkt auf Liste und Karte. Hat eine Gemeinde eine zweite Sprachform, steht sie in Klammern dahinter: „Waimes (dt. Weismes)“, „Amel (frz. Amblève)“. Ein Eintrag ohne Gebiet fällt bei gesetztem Filter heraus.
 - **Gewässer**: Pegel mit Verlauf, Warnstufen und Trend (Mosel, Saar, Sauer, Prüm, Kyll, Lahn, Nahe, Rhein und mehr). Pegel erscheinen erst ab Kartenstufe 8.
 - **Umwelt**: Luftqualität (Feinstaub, Stickstoffdioxid, Ozon), Ortsdosisleistung (Strahlung), Pollen und UV, Waldbrandindex. Auch ab Stufe 8.
 - **Wetter**: Messwerte der DWD- und KMI-Stationen, Vorhersage.
@@ -132,7 +132,7 @@ Zwei Menüs binden amtliche Kartendienste des Landes ein, zum Beispiel geologisc
 
 ## 3.8 Tastatur, Bildschirmleser, Bewegung
 
-- **Tastatur**: alle Menüs, die Suche (`/`, `Strg+K`), die Ebenenschalter und die Seitenleiste sind mit Tab, Pfeil- und Entertasten erreichbar; ein Link „Zum Inhalt springen“ steht am Anfang jeder Seite. Die Zahlen der Dichte-Ebene (unter Stufe 8) lassen sich nur mit der Maus anklicken; Ersatz sind die Zoomtasten, der Landkreisfilter und die Tabelle.
+- **Tastatur**: alle Menüs, die Suche (`/`, `Strg+K`), die Ebenenschalter und die Seitenleiste sind mit Tab, Pfeil- und Entertasten erreichbar; ein Link „Zum Inhalt springen“ steht am Anfang jeder Seite. Die Zahlen der Dichte-Ebene (unter Stufe 8) lassen sich nur mit der Maus anklicken; Ersatz sind die Zoomtasten, der Gebietsfilter und die Tabelle.
 - **Bildschirmleser**: Die Karte trägt eine Beschreibung und verweist auf die Tabelle; Warnband und Hinweise sind Statusbereiche.
 - **Bewegung**: Ist im Betriebssystem „weniger Bewegung“ eingestellt, stehen Wasserbewegung, Tropfen und Radarstrahl still.
 - **Kontrast**: helle und dunkle Darstellung mit eigenen Farbwerten.

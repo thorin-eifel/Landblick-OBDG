@@ -118,6 +118,14 @@ export function ortsnamenUebersicht(l) {
   const gross = ['>=', ['to-number', ['get', 'population'], 0], FREMD_MIN_EINWOHNER];
   return [{ ...l, minzoom: 9 }, { ...l, id: 'places_locality_ov', minzoom: 5, maxzoom: 9, filter: ['all', ['==', ['get', 'kind'], 'locality'], ['any', inKern, gross]] }];
 }
+// Ortsname auf der Karte: oben der Name vor Ort (OSM `name`, so steht er auf dem Ortsschild), darunter kleiner die deutsche Form,
+// wenn sie abweicht. Der Stil von Protomaps nähme bei lang 'de' die deutsche Form allein; in Wallonien sind das oft Formen aus
+// preußischer oder älterer Zeit (Geilich für Gouvy, Engelsdorf für Ligneuville), die auf keinem Schild stehen. In der DG und in
+// Deutschland sind beide gleich, dort bleibt eine Zeile. Steckt die deutsche Form schon im Namen („Kelmis - La Calamine“), auch.
+export const ORTSNAME = ['case',
+  ['all', ['has', 'name'], ['has', 'name:de'], ['!', ['in', ['get', 'name:de'], ['get', 'name']]]],
+  ['format', ['get', 'name'], {}, '\n', {}, ['get', 'name:de'], { 'font-scale': 0.8 }],
+  ['coalesce', ['get', 'name'], ['get', 'name:de'], '']];
 export const HOUSENO = { light: ['#6b0019', 'rgba(255,255,255,0.9)'], dark: ['#f0b3c4', 'rgba(20,20,20,0.9)'] };
 export function labelsAndBuildings(dark) {
   const k = dark ? 'dark' : 'light';
@@ -154,10 +162,10 @@ export function labelsAndBuildings(dark) {
     } else if (l.id === 'places_locality' || l.id === 'places_subplace') {
       // Ortsnamen: größer, gesperrt, in voller Textfarbe mit breitem Saum
       // Größe nach Siedlungsgröße: population_rank der Kacheln (1 Einzelhof … 9 Großstadt) → 8 pt bis 12 pt (10,67 bis 16 px),
-      // unabhängig vom Zoom. Weiler = Rang 2, Dorf 3 bis 5, Stadt 6 bis 7, Trier = 9. Fehlt der Rang, gilt der kleinste Wert.
+      // unabhängig vom Zoom. Weiler = Rang 2, Dorf 3 bis 5, Stadt 6 bis 7, Großstadt 9. Fehlt der Rang, gilt der kleinste Wert.
       const rank = ['max', 1, ['min', 9, ['to-number', ['get', 'population_rank'], 1]]];
       out = { ...out, minzoom: 9, ...(l.filter ? { filter: l.filter } : {}),
-        layout: { ...out.layout, 'text-size': ['interpolate', ['linear'], rank, 1, SIZE_MIN_PX, 9, SIZE_MAX_PX],
+        layout: { ...out.layout, 'text-field': ORTSNAME, 'text-size': ['interpolate', ['linear'], rank, 1, SIZE_MIN_PX, 9, SIZE_MAX_PX],
           'text-letter-spacing': 0.06, 'text-transform': ['case', ['>=', rank, 6], 'uppercase', 'none'], 'text-max-width': 8 },
         paint: { ...out.paint, 'text-color': INK[k], 'text-halo-color': HALO[k], 'text-halo-width': 2.8, 'text-halo-blur': 0.3 } };
     }
