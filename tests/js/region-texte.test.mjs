@@ -28,3 +28,16 @@ test('Titelschild der Alten Karte heißt Ostbelgien', async () => {
   const { KARTUSCHE_TITEL } = await import('../../web/js/medieval.js');
   assert.equal(KARTUSCHE_TITEL, 'Ostbelgien');
 });
+
+test('Untertitel des Titelschilds folgt dem laufenden Jahr', async () => {
+  const { roemisch, annoDomini } = await import('../../web/js/medieval.js');
+  assert.equal(roemisch(2026), 'MMXXVI');
+  assert.equal(roemisch(2027), 'MMXXVII');
+  assert.equal(roemisch(1999), 'MCMXCIX');
+  assert.equal(roemisch(1450), 'MCDL');
+  assert.equal(roemisch(3999), 'MMMCMXCIX');
+  assert.equal(roemisch(0), '0');
+  assert.equal(roemisch(4000), '4000');
+  assert.equal(annoDomini(new Date(2026, 11, 31, 23, 59)), 'anno Domini MMXXVI');
+  assert.equal(annoDomini(new Date(2027, 0, 1, 0, 0)), 'anno Domini MMXXVII');
+});

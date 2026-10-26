@@ -204,6 +204,19 @@ export function waterPatternLayer() {
 
 // Zierde über der Karte: Titelschild (DOM, nur Darstellung). Der Name der Region steht hier fest (tests/js/region-texte.test.mjs).
 export const KARTUSCHE_TITEL = 'Ostbelgien';
+
+/** Römische Zahl für 1 bis 3999 (2026 → "MMXXVI"); außerhalb dieses Bereichs die arabische Ziffernfolge. */
+export function roemisch(n) {
+  if (!Number.isInteger(n) || n < 1 || n > 3999) return String(n);
+  const stufen = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let out = '';
+  for (const [wert, zeichen] of stufen) while (n >= wert) { out += zeichen; n -= wert; }
+  return out;
+}
+
+/** Untertitel des Titelschilds: das laufende Jahr nach der Uhr des Geräts. */
+export const annoDomini = (datum = new Date()) => `anno Domini ${roemisch(datum.getFullYear())}`;
+
 export function decor(on) {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
@@ -211,9 +224,11 @@ export function decor(on) {
   if (!c) {
     c = document.createElement('div'); c.id = 'med-cartouche'; c.className = 'med-cartouche'; c.setAttribute('aria-hidden', 'true');
     const t = document.createElement('div'); t.className = 'med-cartouche-t'; t.textContent = KARTUSCHE_TITEL;
-    const u = document.createElement('div'); u.className = 'med-cartouche-u'; u.textContent = 'anno Domini MMXXVI';
+    const u = document.createElement('div'); u.className = 'med-cartouche-u';
     c.append(t, u); mapEl.append(c);
   }
+  // bei jedem Einblenden neu: eine Seite, die über Silvester offen bleibt, zeigt danach das neue Jahr
+  if (on) c.querySelector('.med-cartouche-u').textContent = annoDomini();
   c.hidden = !on;
 }
 
