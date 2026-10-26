@@ -38,3 +38,6 @@ Stand nach O2 (`o2-kartenbasis.md`).
 - **Upload.** Im Repository gibt es keinen. Soll Landblick-OBDG öffentlich ausgeliefert werden, braucht es einen, der die Hinweise im Manifest befolgt (`o4-export.md`, Abschnitt Auslieferung).
 - **Desktop-App.** Bezeichner und Paketnamen sind umgestellt, das Nachladepaket von Landblick-RLP ist abgeschaltet (O2). Ein Installer für Ostbelgien wurde noch nicht gebaut.
 - **Handbuch.** `docs/handbuch/` ist inhaltlich noch das Handbuch von Landblick-RLP mit angepasstem Titel. Kapitel 1, 4 und 9 neu schreiben.
+- **Bildrate.** In O5 nur in Software-Rendering gemessen (`o5-frontend.md`). Auf einem Rechner mit GPU wiederholen: `python tools/perf_messung.py --url http://127.0.0.1:8099/ --gpu`.
+- **Screenreader.** axe-core findet nichts mehr (O5); ein Durchgang mit NVDA oder VoiceOver steht aus.
+- **Deutsche Altformen.** Karte und Filter zeigen die deutsche Form aus OSM auch dort, wo sie kaum noch im Gebrauch ist (Hohenfels für Houffalize), immer nur als Zusatz zum amtlichen Namen. Wer das anders will, entscheidet über eine Liste von Ausnahmen.

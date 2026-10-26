@@ -64,3 +64,18 @@ test('Ansicht aus der Adresse: gültige Werte, sonst null', async () => {
   assert.deepEqual(ansichtAusAdresse('#14.5/49/6'), { zoom: 14.5, lat: 49, lon: 6 });
   for (const bad of ['#debug', '', undefined, '#99/49/6', '#12/95/6', '#12/49/200', '#12/49', '#12/a/b', '#12/49/6/1']) assert.equal(ansichtAusAdresse(bad), null, String(bad));
 });
+
+test('Ortsname: Name vor Ort oben, abweichende deutsche Form klein darunter', async () => {
+  const { ORTSNAME, labelsAndBuildings } = await import('../../web/js/lage/stil.js');
+  const [op, cond, zweizeilig, einzeilig] = ORTSNAME;
+  assert.equal(op, 'case');
+  assert.deepEqual(cond[3], ['!', ['in', ['get', 'name:de'], ['get', 'name']]], 'steckt die deutsche Form im Namen, bleibt es eine Zeile');
+  assert.deepEqual(zweizeilig.slice(0, 2), ['format', ['get', 'name']], 'oben der Name vor Ort, nicht name:de');
+  assert.deepEqual(zweizeilig[5], ['get', 'name:de']);
+  assert.ok(zweizeilig[6]['font-scale'] < 1);
+  assert.deepEqual(einzeilig, ['coalesce', ['get', 'name'], ['get', 'name:de'], '']);
+  for (const id of ['places_locality', 'places_subplace']) {
+    const out = labelsAndBuildings(false)({ id, type: 'symbol', layout: { 'text-font': ['x'], 'text-field': ['get', 'name:de'] }, paint: {} });
+    assert.equal(out.layout['text-field'], ORTSNAME, id);
+  }
+});

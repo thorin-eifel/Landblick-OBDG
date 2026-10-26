@@ -238,7 +238,7 @@ Eigene Gebäudeebene (`web/tiles/gebaeude.pmtiles`): In Landblick-RLP kamen dort
 
 ### Rechtsklick-Auskunft
 
-Rechtsklick auf die Karte (auf Touchgeräten: Finger lang halten) öffnet ein kleines Fenster mit Höhe (Geländemodell der Karte), Koordinaten (Dezimalgrad, Grad/Minuten/Sekunden, UTM ETRS89; die Zonengrenze 31/32 läuft bei 6° Ost durch die Region), Gebiet und Land. Gebiet heißt Gemeinde in Belgien, Luxemburg und den Niederlanden, Kreis in Deutschland. Die Flächen kommen aus `web/geo/gebiete.geojson` (`tools/build_region.py`, OSM, 226 KB), die der Browser beim ersten Rechtsklick holt. Es gibt keine Anfrage an Dritte. Code: `web/js/lage/kontext.js` und `web/js/ortsinfo.js` (getestet in `tests/js/ortsinfo.test.mjs`). Ortsteile und Teilgemeinden (Eynatten, Elsenborn) fehlen noch.
+Rechtsklick auf die Karte (auf Touchgeräten: Finger lang halten) öffnet ein kleines Fenster mit Höhe (Geländemodell der Karte), Koordinaten (Dezimalgrad, Grad/Minuten/Sekunden, UTM ETRS89; die Zonengrenze 31/32 läuft bei 6° Ost durch die Region), Gebiet und Land. Gebiet heißt Gemeinde in Belgien, Luxemburg und den Niederlanden, Kreis in Deutschland; eine zweite Sprachform steht in Klammern dahinter. Die Höhe kommt aus der feinsten vorhandenen Höhenkachel (Ostbelgien: Zoom 12, rund 30 m). Die Flächen kommen aus `web/geo/gebiete.geojson` (`tools/build_region.py`, OSM, 226 KB), die der Browser beim ersten Rechtsklick holt. Es gibt keine Anfrage an Dritte. Code: `web/js/lage/kontext.js` und `web/js/ortsinfo.js` (getestet in `tests/js/ortsinfo.test.mjs`). Ortsteile und Teilgemeinden (Eynatten, Elsenborn) fehlen noch.
 
 ## Live, Stau, Icons
 
@@ -428,6 +428,7 @@ Die Seite lädt `data/manifest.json` und `data/start.json` und holt danach nur d
 - **Linien.** Routen und Stromleitungen werden je Zelle auf deren Stück zugeschnitten (Kennung `<id>@<zelle>`), statt ganz in jede berührte Zelle zu wandern. Das halbierte die Routen in den Zellen (`docs/obdg/o4-export.md`).
 - **Größe.** Budgets: 500 KB je Zelldatei, 512 KB für das Startpaket. Überschreitungen stehen als Warnung im Manifest und im Protokoll des Exports, abgeschnitten wird nichts.
 - **Alter.** Zellen tragen keine Abrufzeit. `fetched_at`, `source_status` und `age_s` setzt das Frontend beim Zusammenführen aus dem Quellenzustand des Startpakets (`anreichern`).
-- **Gebiet.** Land und Landkreis stehen im Ereignisfilter („Filter“). Das Backend schreibt `ars` und `land` an Ereignisse und Messstellen (VG250, `app/export_cells.py`); außerhalb Deutschlands kommt `land` aus dem `region_tag` des Sammlers, ein deutsches Kürzel ohne Kreis bleibt „unbekannt“.
+- **Gebiet.** Land und Gemeinde/Kreis stehen im Ereignisfilter („Filter“). Das Backend schreibt `ars` und `land` an Ereignisse und Messstellen (Gliederung `app/data/region/gebiete.json`, `app/export_cells.py`). Die Gebietsliste im Startpaket trägt `name_de` bzw. `name_fr`, wo OSM eine abweichende zweite Sprachform kennt; das Frontend zeigt sie in Klammern (`gebietName` in `web/js/gebiet.js`).
+- **Ortsnamen auf der Karte.** Oben der Name vor Ort (OSM `name`, wie auf dem Ortsschild), darunter kleiner die deutsche Form, wenn sie abweicht (`ORTSNAME` in `web/js/lage/stil.js`). Der Stil von Protomaps zeigte sonst allein `name:de`, in Wallonien oft alte Formen (Geilich für Gouvy).
 - **Prüfzugang.** `#debug` kennt den Befehl `zellen` (gehaltene Dateien, Fehler, Bytes, Ereignisse) und wartet auf laufende Abrufe.
 

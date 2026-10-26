@@ -55,7 +55,7 @@ export function renderIndizes(panel, idx, { h, sevBadge, sourceLine, ageEl }) {
 
   const uv = idx.uv;
   if (uv?.station) {
-    panel.append(section(h, 'UV-Index', `Station ${uv.station} (Hunsrück), höchster zu erwartender Wert des Tages`));
+    panel.append(section(h, 'UV-Index', `Station ${uv.station}, höchster zu erwartender Wert des Tages`));
     panel.append(h('div', { class: 'pegel' },
       h('h3', {}, 'UV-Gefahrenindex'), h('div', { class: 'val' }, `${uv.today ?? '–'} ${UV_TEXT(uv.today)}`),
       h('div', { class: 'muted' }, `morgen ${uv.tomorrow ?? '–'} (${UV_TEXT(uv.tomorrow)}) · übermorgen ${uv.dayafter ?? '–'} (${UV_TEXT(uv.dayafter)})`),

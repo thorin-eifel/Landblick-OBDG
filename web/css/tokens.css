@@ -34,6 +34,7 @@
   --fg: var(--brand-teal-900);
   --fg-muted: oklch(42% .025 215); /* DS v5.0 --muted: 7,4:1 auf Sand; brand-grey-500 bleibt für Flächen */
   --warn-text: oklch(48% .10 70); /* Bernstein als Text, AA auf allen Flächen */
+  --success-text: oklch(47% .12 155); /* Grün als Text: --status-success erreicht auf hellen Flächen nur 3,2:1 */
   --fg-on-strong: var(--brand-stone-50);
   --accent: var(--brand-teal-500);
   --accent-fg: var(--brand-teal-900);
@@ -168,6 +169,7 @@
   --fg: oklch(97% .005 230);
   --fg-muted: oklch(78% .015 225);
   --warn-text: var(--status-warning);
+  --success-text: var(--status-success);
   --fg-on-strong: oklch(97% .005 230);
   --accent: oklch(78% .07 210);
   --accent-fg: oklch(16% .02 210);

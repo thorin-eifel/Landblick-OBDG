@@ -6,6 +6,8 @@
 //          Ortsteile und Teilgemeinden (Eynatten, Hergenrath …) fehlen noch.
 // Test:   tests/js/ortsinfo.test.mjs
 
+import { gebietName } from './gebiet.js';
+
 /** Punkt (x, y) in Ring [x0, y0, x1, y1, ...]? Gerade-ungerade-Regel. */
 export function imRing(ring, x, y) {
   let drin = false;
@@ -46,7 +48,7 @@ export function findeGebiet(gebiete, lng, lat) {
   const f = gebiete?.features?.find((x) => imGeoJson(x.geometry, lng, lat));
   if (!f) return { gebiet: null, ebene: null, land: null };
   const p = f.properties ?? {};
-  return { gebiet: p.name ?? null, ebene: p.ebene ?? null, land: LAENDER[p.land] ?? p.land ?? null };
+  return { gebiet: gebietName(p) || null, ebene: p.ebene ?? null, land: LAENDER[p.land] ?? p.land ?? null };
 }
 
 const fmt = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 5, maximumFractionDigits: 5 });

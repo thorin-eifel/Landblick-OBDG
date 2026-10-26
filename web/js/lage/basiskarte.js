@@ -107,7 +107,7 @@ export function applyBasemap() {
   applyFont();   // gewählte Schrift auf die neu gebauten Beschriftungen
 }
 
-// Gewässer blau, damit Mosel, Sauer und Seen auch auf der grauen Basiskarte und über dem Relief sofort lesbar sind
+// Gewässer blau, damit Maas, Our, Talsperren und Seen auch auf der grauen Basiskarte und über dem Relief sofort lesbar sind
 export function paintWater(dark, med) {
   const fill = med ? MED.water : tintOf(state.skin, dark)?.water ?? (dark ? '#1f4f7a' : '#8fc0e8'), line = fill;   // Linie in Flächenfarbe: Mittellinie und Fläche gehen nahtlos ineinander über
   if (map.getLayer('bm-water')) map.setPaintProperty('bm-water', 'fill-color', fill);
@@ -128,7 +128,7 @@ export function applyLight(dark = document.documentElement.dataset.ansicht === '
   const on = state.layers.licht && state.layers.relief;
   const med = !!state.layers.medieval;
   const before = map.getLayer('bm-water') ? 'bm-water' : 'radius-fill';
-  // Wasserglitzern über Wasserfläche und Wasserlinien (Mosel, Bäche haben dieselbe Farbe), aber unter allem, was danach kommt
+  // Wasserglitzern über Wasserfläche und Wasserlinien (Flüsse und Bäche haben dieselbe Farbe), aber unter allem, was danach kommt
   const ids = map.getStyle().layers.map((l) => l.id);
   const last = Math.max(...['bm-water', 'bm-water_stream', 'bm-water_river'].map((i) => ids.indexOf(i)));
   const beforeWater = last >= 0 && ids[last + 1] ? ids[last + 1] : 'radius-fill';

@@ -13,6 +13,17 @@ export const LAND_NAMEN = {
   'DE-NW': 'Nordrhein-Westfalen', 'DE-RP': 'Rheinland-Pfalz', LU: 'Luxemburg', 'NL-LI': 'Niederlande (Limburg)',
   BE: 'Belgien', DE: 'Deutschland', NL: 'Niederlande',
 };
+/**
+ * Anzeigename eines Gebiets: amtlicher Name, dahinter die andere Sprachform, wenn es eine gibt.
+ * „Waimes (dt. Weismes)“, „Amel (frz. Amblève)“. Die Formen kommen aus OSM (tools/build_region.py, andere_namen).
+ */
+export function gebietName(k) {
+  if (!k?.name) return '';
+  if (k.name_de) return `${k.name} (dt. ${k.name_de})`;
+  if (k.name_fr) return `${k.name} (frz. ${k.name_fr})`;
+  return k.name;
+}
+
 export const GEBIET_LEER = Object.freeze({ land: '', ars: '' });
 
 export const gebietAktiv = (g) => !!(g && (g.land || g.ars));
@@ -35,16 +46,19 @@ export function gebietAusEinheit(key, kreise) {
   return null;
 }
 
-/** Länder für die Auswahl: alle, die in der Kreisliste vorkommen, dazu die Nachbarländer. */
+/**
+ * Länder für die Auswahl: alle, die in der Gliederung vorkommen, dazu Belgien, Luxemburg und die Niederlande ohne Teilgebiet.
+ * Das sind die Rückfälle des Exports für Punkte knapp außerhalb der Gliederung (AUSLAND in app/export_cells.py).
+ */
 export function laenderListe(kreise) {
   const set = new Set((kreise ?? []).map((k) => k.land));
-  for (const l of ['LU', 'BE', 'FR']) set.add(l);
+  for (const l of ['BE', 'LU', 'NL']) set.add(l);
   return [...set].sort((a, b) => (LAND_NAMEN[a] ?? a).localeCompare(LAND_NAMEN[b] ?? b, 'de')).map((l) => [l, LAND_NAMEN[l] ?? l]);
 }
 
 /** Kreise eines Landes (alle, wenn kein Land gewählt), nach Namen sortiert. */
 export function kreiseListe(kreise, land) {
-  return (kreise ?? []).filter((k) => !land || k.land === land).sort((a, b) => a.name.localeCompare(b.name, 'de')).map((k) => [k.ars, k.name]);
+  return (kreise ?? []).filter((k) => !land || k.land === land).sort((a, b) => a.name.localeCompare(b.name, 'de')).map((k) => [k.ars, gebietName(k)]);
 }
 
 /** Setzt ein Land; ein gewählter Kreis, der nicht dazu passt, wird verworfen. */

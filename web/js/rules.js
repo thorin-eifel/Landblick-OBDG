@@ -90,3 +90,12 @@ export function trafficLevel(p) {
   if (a.kind === 'baustelle') return p.severity === 'info' ? 'yellow' : 'orange';
   return 'orange';
 }
+
+/** Vorlesetext der Lauf-Historie auf der Statusseite: „letzte 12 Läufe: 11 erfolgreich, 1 Fehler“, ohne Läufe „noch kein Lauf“. */
+export function laeufeText(runs) {
+  const n = runs?.length ?? 0;
+  if (!n) return 'noch kein Lauf';
+  const bad = runs.filter((r) => !r.ok).length;
+  const kopf = n === 1 ? 'letzter Lauf' : `letzte ${n} Läufe`;
+  return `${kopf}: ${n - bad} erfolgreich, ${bad} mit Fehler`;
+}

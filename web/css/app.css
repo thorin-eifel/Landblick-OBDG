@@ -109,7 +109,7 @@ tr.click:hover { background: var(--surface); }
 .sev-notice { color: oklch(50% .10 90); } .sev-info { color: var(--fg-muted); }
 html[data-ansicht="dunkel"] .sev-warning { color: oklch(72% .15 55); }
 html[data-ansicht="dunkel"] .sev-notice { color: var(--sys-yellow); }
-.st-ok { color: var(--status-success); } .st-degraded, .st-stale { color: var(--warn-text); }
+.st-ok { color: var(--success-text); } .st-degraded, .st-stale { color: var(--warn-text); }
 .st-down { color: var(--danger); } .st-pending, .st-disabled { color: var(--fg-muted); }
 .stale-note { color: var(--warn-text); font-weight: 600; }
 

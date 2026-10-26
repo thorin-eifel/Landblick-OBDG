@@ -67,8 +67,36 @@ def lonlat_rings(geom, digits: int = 5) -> list[list[list[list[float]]]]:
     return out
 
 
+def _faltung(s: str) -> str:
+    """Vergleichsform ohne Akzente und Groß-/Kleinschreibung: Bütgenbach und Butgenbach gelten als derselbe Name."""
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c)).casefold()
+
+
+def andere_namen(name: str, namedetails: dict, land: str) -> dict[str, str]:
+    """Die zweite Sprachform eines Gebiets, wenn sie wirklich abweicht: name_fr für die DG (Amel → Amblève),
+    name_de für alle anderen außerhalb Deutschlands (Waimes → Weismes). Quelle: OSM name:de bzw. name:fr.
+    Die Formen stehen so in OSM; manche sind alt und kaum noch im Gebrauch (Houffalize → Hohenfels). Das Frontend
+    zeigt sie deshalb als Zusatz, nie an Stelle des amtlichen Namens."""
+    if land.startswith("DE"):
+        return {}
+    key, tag = ("name_fr", "name:fr") if land == "BE-DG" else ("name_de", "name:de")
+    alt = (namedetails or {}).get(tag) or ""
+    if not alt or _faltung(alt) in _faltung(name):
+        return {}
+    return {key: alt}
+
+
 def gebiet_meta(feat: dict) -> dict[str, str] | None:
-    """Schlüssel, Name, Land und Ebene aus einem Nominatim-Feature. None für Flächen, die keine Verwaltungseinheit sind."""
+    """Schlüssel, Name, Land und Ebene aus einem Nominatim-Feature. None für Flächen, die keine Verwaltungseinheit sind.
+    Dazu name_de bzw. name_fr, wenn der Abruf namedetails enthält (andere_namen)."""
+    meta = _gebiet_meta(feat)
+    if meta is not None:
+        meta.update(andere_namen(meta["name"], feat.get("properties", {}).get("namedetails") or {}, meta["land"]))
+    return meta
+
+
+def _gebiet_meta(feat: dict) -> dict[str, str] | None:
     p = feat.get("properties", {})
     tags = p.get("extratags") or {}
     addr = p.get("address") or {}
@@ -152,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     _write(args.root / "web" / "geo" / "kern.geojson", {"type": "FeatureCollection", "attribution": meta["attribution"], "features": [
         {"type": "Feature", "properties": {"name": "Deutschsprachige Gemeinschaft"}, "geometry": shapely.geometry.mapping(kern_simpl)}]})
     _write(args.root / "web" / "geo" / "gebiete.geojson", {"type": "FeatureCollection", "attribution": meta["attribution"], "features": [
-        {"type": "Feature", "properties": {"ars": g["ars"], "name": g["name"], "land": g["land"], "ebene": g["ebene"]},
+        {"type": "Feature", "properties": {k: g[k] for k in ("ars", "name", "name_de", "name_fr", "land", "ebene") if k in g},
          "geometry": {"type": "MultiPolygon", "coordinates": [[ring + ring[:1] for ring in poly] for poly in g["polygons"]]}}
         for g in gebiete]})
     umriss = to_ll(kern_m.buffer(500).simplify(args.umriss_m))

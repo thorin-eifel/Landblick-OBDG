@@ -1,6 +1,6 @@
 // Status- und Quellenseiten.
 import { $, h, getJSON, fmtDateTime, ageEl, tickAges, statusBadge, initTheme, link } from './util.js';
-import { deriveStatus, overall, exportStale } from './rules.js';
+import { deriveStatus, overall, exportStale, laeufeText } from './rules.js';
 import { ladeZugang, zugangBox } from './zugang.js';
 
 async function status() {
@@ -14,7 +14,7 @@ async function status() {
     ...(stale ? [h('span', { class: 'stale-note' }, ' — Sammelstelle liefert nichts Neues')] : []));
   const tbody = h('tbody');
   for (const s of d.sources) {
-    const runs = h('span', { class: 'runs', 'aria-label': `letzte ${s.recent_runs.length} Läufe` },
+    const runs = h('span', { class: 'runs', role: 'img', 'aria-label': laeufeText(s.recent_runs) },
       [...s.recent_runs].reverse().map((r) => h('span', { class: `run${r.ok ? '' : ' bad'}`, title: `${fmtDateTime(r.started_at)}: ${r.ok ? `${r.n_new} neu` : r.error}` })));
     tbody.append(h('tr', {},
       h('td', {}, h('strong', {}, s.name), h('div', { class: 'muted mono' }, s.id)),

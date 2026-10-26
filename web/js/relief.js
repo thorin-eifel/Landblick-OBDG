@@ -113,10 +113,14 @@ export function setReliefVisible(map, shade, contours) {
 /** Rohe Höhenkachel (Meter, zeilenweise) für das Lichtmodell; wirft, wenn es die Kachel nicht gibt. */
 export const demTile = (z, x, y) => (dem ? dem.getDemTile(z, x, y) : Promise.reject(new Error('kein Relief')));
 
-/** Höhe in Metern an einer Koordinate aus der Zoom-14-Kachel, bilinear gemittelt; null, wenn nicht ermittelbar. */
+/** Zoom der Kachel für eine Höhenabfrage: 14, oder weniger, wenn die Ablage gröber ist (Ostbelgien: 12, meta.json). Feinere
+ *  Kacheln (hires) bringen für einen Zahlenwert nichts. Vorher stand hier fest 14; bei einer Ablage bis 12 lief jede Abfrage ins Leere. */
+export const abfrageZoom = (maxzoom) => Math.min(maxzoom, DEM_MAXZOOM_BASE);
+
+/** Höhe in Metern an einer Koordinate aus der feinsten vorhandenen Kachel bis Zoom 14, bilinear gemittelt; null, wenn nicht ermittelbar. */
 export async function elevationAt(lng, lat) {
   if (!dem) return null;
-  const z = DEM_MAXZOOM_BASE, n = 2 ** z;
+  const z = abfrageZoom(DEM_MAXZOOM), n = 2 ** z;
   const fx = ((lng + 180) / 360) * n;
   const sin = Math.sin((lat * Math.PI) / 180);
   const fy = (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * n;

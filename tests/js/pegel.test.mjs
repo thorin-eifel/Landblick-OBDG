@@ -94,3 +94,12 @@ test('Kartenrang: Strom 0, Zufluss 1, tiefer wächst, unbekannt 4, ohne Netz 2',
   assert.equal(stationRank({ source_id: 'p', water: 'Unbekannt' }, NET), 4);
   assert.equal(stationRank({ source_id: 'p', water: 'Mosel' }, null), 2);
 });
+
+test('Belgische Flüsse: deutscher Name der DG, Form des SPW in Klammern; Artikel fallen weg', () => {
+  assert.equal(waterName('Vesdre'), 'Weser (Vesdre)');
+  assert.equal(waterName('Amblève'), 'Amel (Amblève)');
+  assert.equal(waterName('Gueule'), 'Göhl (Gueule)');
+  assert.equal(waterName('Basse Meuse'), 'Maas');
+  assert.equal(waterName('Die Braunlauf'), 'Braunlauf');
+  assert.equal(waterName('Warche'), 'Warche');
+});
