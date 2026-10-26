@@ -1,0 +1,42 @@
+# Baut die Kachelpakete (Basiskarte, Höhen, Suchindex) und legt sie als Release an, aus dem windows-installer.yml lädt.
+# Start: Actions → kacheln-release → Run workflow. Ein vorhandenes Release wird nie überschrieben; neuer Stand = nächster Tag.
+# Ablauf und Prüfungen: tools/kartenbasis.sh (Bau, Lückenprüfung) und tools/kacheln_release.sh (Packen, Prüfsummen, Notiz).
+# Netz: build.protomaps.com, s3.amazonaws.com (Höhen), github.com (pmtiles-CLI). Dauer in der Cloud-Sitzung vom 25.10.2026: wenige Minuten.
+name: kacheln-release
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release-Tag, kacheln-<Zahl>"
+        default: "kacheln-1"
+      build:
+        description: "Protomaps-Build JJJJMMTT; leer = neuester"
+        default: ""
+permissions: { contents: write }
+jobs:
+  kacheln:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with: { ref: main }
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.11", cache: pip, cache-dependency-path: "requirements*.txt" }
+      - name: Umgebungen und pmtiles-CLI
+        run: |
+          python -m venv .venv-tools && .venv-tools/bin/pip install -q -r requirements-tools.txt
+          python -m venv .venv && .venv/bin/pip install -q -r requirements.txt
+          # gleiche Version wie in tools/kartenbasis.sh (PMTILES_VERSION), als fertiges Programm statt per Go
+          mkdir -p tools/bin
+          curl -fsSL "https://github.com/protomaps/go-pmtiles/releases/download/v1.28.0/go-pmtiles_1.28.0_Linux_x86_64.tar.gz" | tar -xz -C tools/bin pmtiles
+          tools/bin/pmtiles version
+      - name: Kartenbasis bauen und prüfen
+        env: { BUILD: "${{ github.event.inputs.build }}" }
+        run: |
+          if [ -z "${BUILD}" ]; then tools/kartenbasis.sh; exit; fi
+          [[ "${BUILD}" =~ ^[0-9]{8}$ ]] || { echo "build muss JJJJMMTT sein: ${BUILD}" >&2; exit 1; }
+          tools/kartenbasis.sh --build "${BUILD}"
+      - name: Pakete zusammenstellen und Release anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.tag }}
+        run: tools/kacheln_release.sh "${TAG}" --github
